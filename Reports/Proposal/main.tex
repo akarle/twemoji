@@ -1,0 +1,144 @@
+%NLP PROJECT PROPOSAL 10/2017
+\documentclass[10pt]{article}
+
+\usepackage[margin=1.0in]{geometry}
+\usepackage[utf8]{inputenc} % allow utf-8 input
+\usepackage[T1]{fontenc}    % use 8-bit T1 fonts
+\usepackage{hyperref}       % hyperlinks
+\usepackage{url}            % simple URL typesetting
+\usepackage{booktabs}       % professional-quality tables
+\usepackage{amsfonts}       % blackboard math symbols
+\usepackage{nicefrac}       % compact symbols for 1/2, etc.
+\usepackage{microtype}      % microtypography
+\usepackage{graphicx}
+\usepackage{parskip} 		% for no auto indent
+\usepackage{amsmath, amssymb}
+
+%CITATION EX: \cite{lara2013survey}
+
+% yo mak dog wassup
+% nm dude just chilling
+
+\DeclareMathOperator*{\argmin}{arg\,min}
+\DeclareMathOperator*{\argmax}{arg\,max}
+
+
+\title{\textbf{Predicting Emojis From Tweet Text Through Sentiment Analysis} \\
+\large CS 585 NLP, UMass Amherst, Fall 2017}
+
+\author{
+  Alexander Karle, Makenzie Schwartz, William Warner \\
+  \texttt{akarle@umass.edu}, \texttt{mwschwartz@umass.edu}, \texttt{wwarner@umass.edu} }
+
+\begin{document}
+
+\maketitle
+
+\section{Outline}
+
+%In the decade since Twitter launched in 2006, it has solidified itself as one of the most prominent forms of social media. A so called ``microblogging'' network, users share 140 character posts (Tweets) with each other and the world at large. Due to the high frequency of tweeting and the rising culture of constant sharing, there is a lot of data to be found in Twitter feeds, whether that be event relevant data, news updates, viral trends, or simply the daily ongoings of your average Twitter user. Regardless of content, t
+In recent years there has been much interest in predicting sentiment in tweets because they are authored by a diverse user group with varied opinions, and understanding these public opinions can lead to valuable information \cite{pak2010twitter}.
+% - tweets come from a diverse user group of many opinions
+% - this understanding about public opinion is valuable info
+A somewhat related task to sentiment analysis has appeared recently and has been presented in the shared tasks of SemEval-2018: how to predict what emoji is associated with a tweet's word content. The motivation behind this task comes 
+from the growing importance of emojis in our digital conversations. These tiny pictures can be used to add flare to a sentence, to express emotion, or even to form sentences all on their own. As such, being able to find associations between word content and emojis could be a valuable and insightful task.
+
+In this project, we will create a classification system which will predict an emoji from tweet text based on a combination of evaluated sentiment in the text and textual features. Furthermore, the system will be evaluated on Spanish and English datasets to test its ability to generalize across languages.%we can expand on this later in approach (that seems to be what they did in their proposal) 
+
+
+
+\section{Literature Review}
+%Im thinking about doing subsections here for organization, but if y'all hate it thats coo too
+\subsection{Sentiment Analysis}
+
+Pak et al. \cite{pak2010twitter} describes an approach to building a labeled Twitter corpus for sentiment analysis and then creating a classifier for the data. For the former, they used a noisy labeling technique where they pulled only tweets containing positive emoticons and labeled these as positive (and did the same for negative). For the classifier, they used Naive Bayes to classify tweets based on extracted features. Features extracted were n-grams (they compared unigrams, bigrams, and trigrams) with some filtering done to improve accuracy. They reported high accuracy.
+
+Rozental et al. \cite{rozental2017amobee} gives us an example of how to estimate the sentiment of a tweet on a five point scale (very negative, negative, neutral, positive, very positive) using two systems.  The first system makes use of Recursive Neural Network models that were trained on tweets that were cleaned and processed using word replacement.  The second system was designed for feature extraction using neural networks, Naïve Bayes, and logistic regression.
+
+Wehrmann et al. \cite{wehrmann2017character} describes a multilingual sentiment analysis method using deep neural networks.  Many approaches use cross-language techniques that involve translating everything into one common language before training.  Cross-language methods can be less accurate and time consuming due to translation issues and word distributions in different languages.  The paper describes a method of using language agnostic character embedding with a convolutional layer, a max pooling layer, and a fully-connected layer that maps the pooled values into positive and negative class scores. This method was able to classify sentiments from any of the languages it was trained on including texts of mixed language.
+
+Giachanou and Crestani \cite{giachanou2016like} present an extremely thorough survey of prior work done in the Twitter sentiment analysis domain, first giving a brief introduction to the topic of sentiment analysis and the particularities of sentiment analysis in Tweets and then presenting the various approaches that have been used to address the topic, including: machine-learning, lexicon-based approaches, graph-based methods, and hybrid approaches. Included also are explanations for common evaluation metrics for sentiment analysis. They conclude with an overview of existing datasets and open issues pertaining to Twitter sentiment analysis.
+
+Kiritchenko et al. \cite{kiritchenko2014sentiment} presents the creation of their NRC-Canada Sentiment Analysis System for short pieces of text like tweets or SMS messages. Their classifier was produced by using supervised training on a linear-kernel SVM and leveraging multiple preexisting and newly-created, Twitter specific lexicons to improve performance. Their system performs well notably with respect to negated text, which they achieved by utilizing a lexicon for affirmative text and a separate lexicon for negated text.
+
+\subsection{Emoji Classification}
+
+Miller et al. \cite{miller2016blissfully} investigates the degree in which the sentiment and meaning of emojis are interpreted differently by different people, with a particular emphasis on the effect that different renderings of the same Unicode emoji description (i.e. Apple’s version of U+1F601 “grinning face with smiling eyes” vs. Google’s version) have on said variance. Miller et al found that sentiment interpretations of emojis from the same platform vary 25\% of the time, and the variance increases when the platforms are different. Survey was only done on English speakers from the United States to control for regional and cultural variations in interpretation.
+
+Novak et al. \cite{novak2015sentiment} discusses the creation of an Emoji Sentiment Lexicon which is the product of 86 human annotators labeling over 1.3 million Tweets in 13 different languages (including English and Spanish). The final lexicon provides sentiment scores for the 751 most used emojis based on the dataset used. The authors concluded that most emojis have a positive sentiment, notably the more popular ones. In addition, they found that there was no major difference in emoji sentiment scores between the 13 languages that the original tweets were were written in.
+
+\section{Scope and Approach}
+
+%We plan to...
+%- create a system to predict sentiment in tweets and use this system to predict emojis both by itself and in combination with other features such as word counts, twitter specific features, etc.
+
+%- WHY? We hypothesize that there is a correlation between sentiment and emoji use (as outlined in work (CITATION--MAK)). Interesting insight
+
+%- HOW: 1) bare bones just sentiment 2) bare bones Ngram or similar model CRF 3) combination using sentiment as a feature
+
+%Multilingual .... more diverse problem
+
+In this project we plan to create a system that will assign an emoji for a tweet based solely on the tweet's text. We will train this system by using a dataset consisting of tweets that originally contained emojis, but that have been stripped and will be used as labels. First, we will train a model to do sentiment analysis on the plain text of the tweet to produce a sentiment polarity value. Then, we will consider this value as a feature in conjunction with other textual features in a classifier to predict which emoji should be reinserted into the tweet. We will train and test our system on both English and Spanish datasets with the aim of producing a language-independent model.
+
+Our main hypothesis which we want to explore is that sentiment analysis of a tweet's text should prove to be a useful feature for emoji prediction. Because emojis carry sentiment information, we believe there is a valuable correlation to be leveraged such that sentiment can be used to predict emojis; however, research has also shown that emojis can be ambiguous in their sentiment polarity \cite{miller2016blissfully}; further, most emojis carry a positive sentiment, especially the more popular ones \cite{novak2015sentiment}. Since the SemEval task focuses on the 20 most popular emojis, we hypothesize that sentiment alone will not give a decisive indicator of emoji and thus textual features (n-grams, POS) will also be necessary.
+
+Thus, in evaluation, we are not only concerned with the performance of the model, but we also wish to explore this hypothesized correlation between sentiment and emojis further. We believe our results will provide valuable insight into the relation between emojis and text.
+
+We plan to train the sentiment analysis model on a separate dataset to output a regression score of how positive or negative a tweet is. We will use both a Neural Network (either an RNN as seen in \cite{rozental2017amobee} or a CNN as seen in \cite{wehrmann2017character}) as well as a simple Naive Bayes with bigrams approach as seen in \cite{pak2010twitter} to do sentiment analysis and compare the results. The benefit of using the NN would be that it could be trained and tested on tweets from multiple languages without needing to translate to a common language, as seen in \cite{wehrmann2017character}.   
+
+%ADD LEXICON! cite where its good too
+Another aspect we will consider in doing sentiment analysis is a hybrid approach that combines the benefits of machine-learning with lexicon-based approaches as described in \cite{giachanou2016like}. Machine-learning approaches require large amounts of training data and are often domain-specific, requiring retraining if they need to be used on a new domain. Lexicon-based approaches require only a smaller, often human-curated lexicon and have been shown to be domain independent. Kiritchenko et al. \cite{kiritchenko2014sentiment} were able to achieve high accuracy rates for the SemEval-2013 task regarding sentiment analysis in Tweets by using several sentiment lexicons in training their classifier. We could make use of some publicly available sentiment lexicons like SentiWordNet or generate Twitter specific lexicons like in \cite{kiritchenko2014sentiment}. However, the challenge here would be finding a productive sentiment lexicon for Spanish.
+
+The second system will be a classifier that uses the sentiment analysis scores alongside other features, such as bigrams and Twitter specific features like hashtags, to predict an emoji. As far as classifier choice, we plan to experiment with a variety of models such as logistic regression, SVM, or another NN.
+
+We will evaluate our model through cross-validation because the dataset provided in the SemEval problem does not include a test set. Furthermore, we plan to evaluate multiple versions of our models; one of the key goals of this project is to provide insight into existing methods and a deeper look into the problem at hand, so we want to compare various techniques and approaches to both sentiment analysis and emoji prediction in order to gain these insights.
+
+\textbf{Preliminary Experiment}
+%for the checkup, we want to have a basic system 
+
+In time for the progress report, we will have a basic sentiment analysis system created through n-grams and NB similar to \cite{pak2010twitter}. We will also have a simple feature extractor (for n-grams and a couple twitter specific text features) for tweet text. We will combine the two and discuss basic results with comparison to a baseline.
+
+The baseline for this study will be predicting the most common emoji. We chose this baseline because it is better than random assignment, but still very naive and should be beatable. 
+
+A second baseline for this project would be simply using unigrams as features combined with a Naive Bayes model. This system should also be beatable as it does not account for context or sentiment, nor is it tailored for tweets. %I think having both is a good call?
+
+\textbf{Out of Scope}
+
+We are not trying to find the best sentiment analysis model, nor are we trying to find the absolute best emoji prediction model. There has been much research (discussed above) about sentiment analysis in tweets, and we feel it is a more interesting and novel problem to explore the relation between sentiment analysis and emoji use. Likewise, while we are attempting to maximize performance in emoji prediction, the investigation of relationship and correlation is of more importance.
+
+\section{Data Sets}
+
+%DATA SET FOR MAIN PROBLEM
+The data for the main task of emoji prediction has been provided by the SemEval-2018 organizers. The set must be collected via Twitter's API; however, SemEval-2018 have also provided a script to gather the dataset through the API. We have tested the script and are confident in its ability to generate a dataset in a reasonable amount of time.
+
+The data set is comprised of tweets that contain one of the top 20 emojis in US or Spain. The emoji is then stripped from the text and used as a label for the data. The dataset contains 500,000 US tweets and 100,000 tweets from Spain.
+
+%THE DATA SET FOR SENTIMENT ANALYSIS
+For training and testing our sentiment analysis model, we will make use of the publicly available Sentiment140 corpus created by Go et al. \cite{go2009twitter}. Since this corpus is only in English, we might need to collect our own dataset for Spanish tweets in a similar manner as described in \cite{go2009twitter}. In addition, datasets from SemEval-2017 Twitter Sentiment Analysis and SemEval-2018 emotion recognition might be useful.
+
+%LEXICONS
+For sentiment lexicons, we might use SentiWordNet or the MPQA Subjectivity lexicon, or generate our own Twitter based lexicon using hashtags as described in Kiritchenko et al. \cite{kiritchenko2014sentiment}, or use a combination of these.
+
+%\section{Scope}
+
+% create and evaluate multiple predictors for both US and Spain tweets
+% do the above through creating a sentiment analysis system
+% analyze correlation between sentiment analysis and emoji prediction
+% alter problem to be easier (ie put hearts together)
+% \end{enumerate}
+
+
+
+\section{Pre-Existing Software}
+
+\begin{enumerate}
+\item Scikitlearn for evaluation scores, other machine learning classification models (NB, SVM, etc)
+\item Theano for neural network backends
+\item Standard Python Libraries: Matplotlib for data visualization, Numpy for data manipulation
+\item Twokenizer (from ArkTweet) for tokenization, or NLTK may suffice as well
+\end{enumerate}
+
+\bibliography {sources.bib} 
+\bibliographystyle{acm}
+
+\end{document}
