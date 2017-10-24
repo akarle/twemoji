@@ -1,6 +1,6 @@
 # Imports
 
-class TextFeaturesExtractor():
+class FeatureExtractor():
 	""" A class to extract text features """
 	def __init__(self, arg):		
 		self.arg = arg
