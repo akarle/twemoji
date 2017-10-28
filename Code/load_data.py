@@ -28,6 +28,9 @@ def load_data(data_file_path, label_file_path):
     tf.close()
     lf.close()
 
+    #convert the labels to ints
+    labels = map(int, labels)
+
     print 'First 10 tweets: ', data[:10]
     print 'First 10 labels: ', labels[:10]
 

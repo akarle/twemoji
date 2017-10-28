@@ -4,7 +4,22 @@ import os
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.naive_bayes import MultinomialNB
 from sklearn.model_selection import cross_val_score
+from sklearn.metrics import accuracy_score
 import numpy as np
+
+# Helper functions
+def baseline_predict(labels):
+    """ A function that predicts the most common label """
+    #get the most common label:
+    labels_array = np.array(labels)
+    mc_label = np.argmax(np.bincount(labels_array))
+    print "Most common label is ", mc_label
+
+    #return an array of the most common label (one per data case)
+    preds = np.multiply(mc_label, np.ones(len(labels)))
+    print preds
+    return preds
+
 
 # Load Data
 data_path = os.path.join('..','Data','trial')
@@ -31,6 +46,9 @@ clf.fit(x_counts, labels)
 
 # Evaluate Classifiers
 scores = cross_val_score(clf, x_counts, labels, cv=5)
-print 'average accuracy score: ', np.mean(scores)
+print 'Average accuracy score for NB with unigrams: ', np.mean(scores)
+
+baseline_score = accuracy_score(labels, baseline_predict(labels))
+print "Baseline accuracy score: ", baseline_score
 
 # Graphing
