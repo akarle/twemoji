@@ -4,35 +4,31 @@
     Loads the labels into a seperate list, `labels`
 """
 
-import numpy as np
-import os
+def load_data(data_file_path, label_file_path):
+    """ A function to load in the data
 
-data_path = os.path.join('..','Data','trial')
+        Example params:
+            label_file = os.path.join('..','Data','trial', 'us_trial.labels')
+            data_file = os.path.join('..','Data','trial', 'us_trial.text')
 
-label_file = os.path.join(data_path, 'us_trial.labels')
-data_file = os.path.join(data_path, 'us_trial.text')
+    """
+    # load in data
+    tf = open(data_file_path, 'r')
+    lf = open(label_file_path, 'r')
 
-# load in data
-lf = open(label_file, 'r')
-tf = open(data_file, 'r')
-
-data = []
-labels = []
+    data = []
+    labels = []
 
 
-for tweet in tf:
-    label = lf.readline().rstrip() #rstrip to remove trailing \n
-    data.append(tweet.rstrip())
-    labels.append(label)
+    for tweet in tf:
+        label = lf.readline().rstrip() #rstrip to remove trailing \n
+        data.append(tweet.rstrip())
+        labels.append(label)
 
-tf.close()
-lf.close()
+    tf.close()
+    lf.close()
 
-print 'First 10 tweets: ', data[:10]
-print 'First 10 labels: ', labels[:10]
+    print 'First 10 tweets: ', data[:10]
+    print 'First 10 labels: ', labels[:10]
 
-# Brief count vector example:
-from sklearn.feature_extraction.text import CountVectorizer
-count_vect = CountVectorizer()
-x_counts = count_vect.fit_transform(data)
-print x_counts.shape
+    return (data, labels)
