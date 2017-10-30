@@ -40,7 +40,6 @@ def baseline_predict(labels):
     print preds
     return preds
 
-
 # Load Data
 data_path = os.path.join('..','Data', args.data[0])
 if not os.path.isdir(data_path):
