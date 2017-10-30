@@ -4,7 +4,7 @@
     Loads the labels into a seperate list, `labels`
 """
 
-def load_data(data_file_path, label_file_path):
+def load_data(data_file_path, label_file_path, num_instances=float('inf'), verbose=1):
     """ A function to load in the data
 
         Example params:
@@ -12,6 +12,14 @@ def load_data(data_file_path, label_file_path):
             data_file = os.path.join('..','Data','trial', 'us_trial.text')
 
     """
+    if verbose >= 1:
+        def verboseprint(*args):
+            for arg in args:
+               print arg,
+            print
+    else:
+        verboseprint = lambda *a: None
+
     # load in data
     tf = open(data_file_path, 'r')
     lf = open(label_file_path, 'r')
@@ -19,11 +27,14 @@ def load_data(data_file_path, label_file_path):
     data = []
     labels = []
 
-
+    count = 0
     for tweet in tf:
+        if count >= num_instances:
+            break
         label = lf.readline().rstrip() #rstrip to remove trailing \n
         data.append(tweet.rstrip())
         labels.append(label)
+        count += 1
 
     tf.close()
     lf.close()
@@ -31,7 +42,12 @@ def load_data(data_file_path, label_file_path):
     #convert the labels to ints
     labels = map(int, labels)
 
-    print 'First 10 tweets: ', data[:10]
-    print 'First 10 labels: ', labels[:10]
+    verboseprint("Loaded ", count, " tweets...")
+    verboseprint('First 10 tweets and labels: ')
+    verboseprint("|   Label ::: Tweet")
+    verboseprint("|   ---------------")
+    for i in range (10):
+        verboseprint('|%6s' % labels[i], " ::: ", data[i])
+    verboseprint("*******")
 
     return (data, labels)
