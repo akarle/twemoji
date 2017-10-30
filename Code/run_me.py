@@ -1,6 +1,7 @@
 # Imports
 from load_data import load_data
 import os
+import fnmatch
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.naive_bayes import MultinomialNB
 from sklearn.model_selection import cross_val_score
@@ -14,14 +15,17 @@ parser = argparse.ArgumentParser(
 parser.add_argument('-c', '--classifier', nargs='+', default='all', choices=['nb', 'lr'],
     help='specifies which classifier(s) to use (default: %(default)s) possible classifiers: %(choices)s',
     metavar='C', dest='classifier_type')
-parser.add_argument('-d', '--data', nargs=1, default='train',
-    help='name of dataset file to use (must be in Data directory)',
+parser.add_argument('-d', '--data', nargs=1, required=True,
+    help='name of dataset subdirectory to use in Data directory (must be in Data directory)',
     metavar='dataset', dest='data')
 parser.add_argument('-n', nargs=1,
     help='number of data entries to train/evaluate on',
     metavar='N', dest='num_instances')
 args = parser.parse_args()
-print(args)
+
+print "*******"
+print "Running " + str(args.classifier_type) + " classifier(s) on dataset " + args.data[0]
+print "*******"
 
 # Helper functions
 def baseline_predict(labels):
@@ -38,9 +42,20 @@ def baseline_predict(labels):
 
 
 # Load Data
-data_path = os.path.join('..','Data','trial')
-label_path = os.path.join(data_path, 'us_trial.labels')
-text_path = os.path.join(data_path, 'us_trial.text')
+data_path = os.path.join('..','Data', args.data[0])
+if not os.path.isdir(data_path):
+    raise Exception('Your specified data directory ' + data_path + ' does not exist.')
+label_path = None
+text_path = None
+for f in os.listdir(data_path):
+    if fnmatch.fnmatch(f, '*.labels') and label_path == None:
+        label_path = os.path.join(data_path, f)
+    elif fnmatch.fnmatch(f, '*.text') and text_path == None:
+        text_path = os.path.join(data_path, 'us_trial.text')
+if label_path == None:
+    raise Exception('Could not find a labels file.')
+if text_path == None:
+    raise Exception('Could not find a text file.')
 
 data, labels = load_data(text_path, label_path)
 
