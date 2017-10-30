@@ -72,6 +72,7 @@ def load_sent140(data_path):
                 if len(l) != 6:
                     print "CSV PARSE ERROR"
 
+        labels = map(int, labels)
         return text, labels
     
     train_file = os.path.join(data_path, 'train.csv')
