@@ -16,28 +16,50 @@ import random
 # Parse arguments
 classops = ['nb', 'lr', 'svm']
 parser = argparse.ArgumentParser(
-    description="Run emoji prediction classifiers and output accuracy results.")
-parser.add_argument('-c', '--classifier', nargs='+', default=classops, choices=classops,
-    help='specifies which classifier(s) to use (default: %(default)s) possible classifiers: %(choices)s',
-    metavar='C', dest='classifier_type')
-parser.add_argument('-d', '--data', nargs=1, required=True,
-    help='name of dataset subdirectory to use in Data directory (must be in Data directory)',
-    metavar='dataset', dest='data')
-parser.add_argument('-n', nargs=1, type=int,
-    help='number of data entries to train/evaluate on',
-    metavar='N', dest='num_instances')
-parser.add_argument('-v', '--verbose', action='count', default=1,
-    help='set verbosity flag',
-    dest='verbose')
-parser.add_argument('-s', '--silent', action='store_const', const=0,
-    help='set verbosity flag to silent',
-    dest='verbose')
+    description="Run emoji prediction classifiers and output results.")
+
+parser.add_argument('-c', '--classifier',
+                    nargs='+',
+                    default=classops,
+                    choices=classops,
+                    help='specifies which classifier(s) to use (default: %(default)s)\
+                          possible classifiers: %(choices)s',
+                    metavar='C',
+                    dest='classifier_type')
+
+parser.add_argument('-d', '--data',
+                    nargs=1,
+                    required=True,
+                    help='name of dataset subdirectory to use in Data directory \
+                          (must be in Data directory)',
+                    metavar='dataset',
+                    dest='data')
+
+parser.add_argument('-n',
+                    nargs=1,
+                    type=int,
+                    help='number of data entries to train/evaluate on',
+                    metavar='N',
+                    dest='num_instances')
+
+parser.add_argument('-v', '--verbose',
+                    action='count',
+                    default=1,
+                    help='set verbosity flag',
+                    dest='verbose')
+
+parser.add_argument('-s', '--silent',
+                    action='store_const',
+                    const=0,
+                    help='set verbosity flag to silent',
+                    dest='verbose')
+
 args = parser.parse_args()
 
 if args.verbose >= 1:
     def verboseprint(*args):
         for arg in args:
-           print arg,
+            print arg,
         print
 else:
     verboseprint = lambda *a: None
@@ -45,47 +67,54 @@ else:
 cverbosity = args.verbose >= 2
 
 verboseprint("*******")
-runstr = "Running " + str(args.classifier_type) + " classifier(s) on dataset " + args.data[0]
+runstr = "Running " + str(args.classifier_type) + \
+         " classifier(s) on dataset " + args.data[0]
 if args.num_instances:
     runstr += " for " + str(args.num_instances[0]) + " tweets"
 verboseprint(runstr)
 verboseprint("*******")
 
+
 # Helper functions
 def baseline_predict(labels):
     """ A function that predicts the most common label """
-    #get the most common label:
+    # get the most common label:
     labels_array = np.array(labels)
     mc_label = np.argmax(np.bincount(labels_array))
     verboseprint("Most common label is ", mc_label)
 
-    #return an array of the most common label (one per data case)
+    # return an array of the most common label (one per data case)
     preds = np.multiply(mc_label, np.ones(len(labels)))
-    #print preds
+    # print preds
     return preds
 
+
 # Load Data
-data_path = os.path.join('..','Data', args.data[0])
+data_path = os.path.join('..', 'Data', args.data[0])
 if not os.path.isdir(data_path):
-    raise Exception('Your specified data directory ' + data_path + ' does not exist.')
+    raise Exception('Your specified data directory ' +
+                    data_path + ' does not exist.')
+
 label_path = None
 text_path = None
 for f in os.listdir(data_path):
-    if fnmatch.fnmatch(f, '*.labels') and label_path == None:
+    if fnmatch.fnmatch(f, '*.labels') and label_path is None:
         label_path = os.path.join(data_path, f)
-    elif fnmatch.fnmatch(f, '*.text') and text_path == None:
+    elif fnmatch.fnmatch(f, '*.text') and text_path is None:
         text_path = os.path.join(data_path, 'us_trial.text')
-if label_path == None:
+if label_path is None:
     raise Exception('Could not find a labels file.')
-if text_path == None:
+if text_path is None:
     raise Exception('Could not find a text file.')
 
 if args.num_instances:
-    data, labels, dcount = load_data(text_path, label_path, args.num_instances[0])
+    data, labels, dcount = load_data(text_path,
+                                     label_path, args.num_instances[0])
 else:
     data, labels, dcount = load_data(text_path, label_path)
 
-# Randomize data order to prevent overfitting to subset of data when running on fewer instances
+# Randomize data order to prevent overfitting to subset of
+# data when running on fewer instances
 combined = list(zip(data, labels))
 random.shuffle(combined)
 data[:], labels[:] = zip(*combined)
@@ -94,15 +123,17 @@ verboseprint("Loaded ", dcount, " tweets...")
 verboseprint('First 10 tweets and labels: ')
 verboseprint("|   Label ::: Tweet")
 verboseprint("|   ---------------")
-for i in range (10):
+
+for i in range(10):
     verboseprint('|%6s' % labels[i], " ::: ", data[i])
 verboseprint("*******")
-
 
 # Extract Features
 verboseprint("Extracting features...")
 extractor = feature_extractor.FeatureExtractor()
-x_counts = extractor.extract_features(data, ['unary', ('sent_analysis', 'baseline')])
+x_counts = extractor.extract_features(data,
+                                      ['unary', ('sent_analysis', 'baseline')])
+
 verboseprint("Features shape: ", x_counts.shape)
 # print count_vect.vocabulary_
 verboseprint("*******")
@@ -115,7 +146,7 @@ verboseprint("*******")
 
 # Instantiate Classifiers
 clfs = {}
-tick_names = [] #seperate for graph tick labels
+tick_names = []  # seperate for graph tick labels
 if 'nb' in args.classifier_type:
     tick_names.append('Multi. NB')
     clfs['<Multinomial Naive Bayes>'] = MultinomialNB()
@@ -133,7 +164,8 @@ for c in clfs:
     # Evaluate Classifier
     scores = cross_val_score(clfs[c], x_counts, labels, cv=5, n_jobs=-1)
     averages[c] = np.mean(scores)
-    verboseprint('Average accuracy score for', c, 'with unigrams: ', np.mean(scores))
+    verboseprint('Average accuracy score for', c, 'with unigrams: ',
+                 np.mean(scores))
     verboseprint("*******")
 
 # Print comparison table

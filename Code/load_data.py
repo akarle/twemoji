@@ -6,6 +6,7 @@
 import csv
 import os
 
+
 def load_data(data_file_path, label_file_path, num_instances=float('inf')):
     """ A function to load in the semeval data
 
@@ -25,7 +26,7 @@ def load_data(data_file_path, label_file_path, num_instances=float('inf')):
     for tweet in tf:
         if count >= num_instances:
             break
-        label = lf.readline().rstrip() #rstrip to remove trailing \n
+        label = lf.readline().rstrip()  # rstrip to remove trailing \n
         data.append(tweet.rstrip())
         labels.append(label)
         count += 1
@@ -33,10 +34,11 @@ def load_data(data_file_path, label_file_path, num_instances=float('inf')):
     tf.close()
     lf.close()
 
-    #convert the labels to ints
+    # convert the labels to ints
     labels = map(int, labels)
 
     return (data, labels, count)
+
 
 def load_sent140(data_path):
     """ A func to load in the sentiment140 dataset
@@ -45,7 +47,7 @@ def load_sent140(data_path):
     """
     # Helper func (as same thing done to both test and train)
     def parse_file(file_path):
-        print 'Loading %s'%file_path
+        print 'Loading %s' % file_path
         labels = []
         text = []
         with open(file_path, 'r') as f:
