@@ -86,8 +86,8 @@ else:
 
 # Extract Features
 verboseprint("Extracting features...")
-extractor = feature_extractor.FeatureExtractor(1)
-x_counts = extractor.unary_features(data)
+extractor = feature_extractor.FeatureExtractor()
+x_counts = extractor.extract_features(data, ['unary', ('sent_analysis', 'baseline')])
 verboseprint("Features shape: ", x_counts.shape)
 # print count_vect.vocabulary_
 verboseprint("*******")
