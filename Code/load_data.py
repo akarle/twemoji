@@ -6,7 +6,7 @@
 import csv
 import os
 
-def load_data(data_file_path, label_file_path, num_instances=float('inf'), verbose=1):
+def load_data(data_file_path, label_file_path, num_instances=float('inf')):
     """ A function to load in the semeval data
 
         Example params:
@@ -14,14 +14,6 @@ def load_data(data_file_path, label_file_path, num_instances=float('inf'), verbo
             data_file = os.path.join('..','Data','trial', 'us_trial.text')
 
     """
-    if verbose >= 1:
-        def verboseprint(*args):
-            for arg in args:
-               print arg,
-            print
-    else:
-        verboseprint = lambda *a: None
-
     # load in data
     tf = open(data_file_path, 'r')
     lf = open(label_file_path, 'r')
@@ -44,19 +36,11 @@ def load_data(data_file_path, label_file_path, num_instances=float('inf'), verbo
     #convert the labels to ints
     labels = map(int, labels)
 
-    verboseprint("Loaded ", count, " tweets...")
-    verboseprint('First 10 tweets and labels: ')
-    verboseprint("|   Label ::: Tweet")
-    verboseprint("|   ---------------")
-    for i in range (10):
-        verboseprint('|%6s' % labels[i], " ::: ", data[i])
-    verboseprint("*******")
-
-    return (data, labels)
+    return (data, labels, count)
 
 def load_sent140(data_path):
-    """ A func to load in the sentiment140 dataset 
-    
+    """ A func to load in the sentiment140 dataset
+
         data_path leads to a dir with contents test.csv and train.csv
     """
     # Helper func (as same thing done to both test and train)
@@ -74,7 +58,7 @@ def load_sent140(data_path):
 
         labels = map(int, labels)
         return text, labels
-    
+
     train_file = os.path.join(data_path, 'train.csv')
     test_file = os.path.join(data_path, 'test.csv')
 

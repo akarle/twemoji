@@ -11,6 +11,7 @@ from sklearn.model_selection import cross_val_score
 from sklearn.metrics import accuracy_score
 import numpy as np
 import argparse
+import random
 
 # Parse arguments
 classops = ['nb', 'lr', 'svm']
@@ -80,9 +81,22 @@ if text_path == None:
     raise Exception('Could not find a text file.')
 
 if args.num_instances:
-    data, labels = load_data(text_path, label_path, args.num_instances[0], verbose=args.verbose)
+    data, labels, dcount = load_data(text_path, label_path, args.num_instances[0])
 else:
-    data, labels = load_data(text_path, label_path, verbose=args.verbose)
+    data, labels, dcount = load_data(text_path, label_path)
+
+# Randomize data order to prevent overfitting to subset of data when running on fewer instances
+combined = list(zip(data, labels))
+random.shuffle(combined)
+data[:], labels[:] = zip(*combined)
+
+verboseprint("Loaded ", dcount, " tweets...")
+verboseprint('First 10 tweets and labels: ')
+verboseprint("|   Label ::: Tweet")
+verboseprint("|   ---------------")
+for i in range (10):
+    verboseprint('|%6s' % labels[i], " ::: ", data[i])
+verboseprint("*******")
 
 
 # Extract Features
@@ -117,7 +131,7 @@ averages = {}
 for c in clfs:
     clfs[c].fit(x_counts, labels)
     # Evaluate Classifier
-    scores = cross_val_score(clfs[c], x_counts, labels, cv=5)
+    scores = cross_val_score(clfs[c], x_counts, labels, cv=5, n_jobs=-1)
     averages[c] = np.mean(scores)
     verboseprint('Average accuracy score for', c, 'with unigrams: ', np.mean(scores))
     verboseprint("*******")
