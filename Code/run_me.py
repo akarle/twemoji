@@ -1,4 +1,5 @@
 # Imports
+from plotting import acc_bar_chart
 from load_data import load_data
 import feature_extractor
 import os
@@ -100,11 +101,15 @@ verboseprint("*******")
 
 # Instantiate Classifiers
 clfs = {}
+tick_names = [] #seperate for graph tick labels
 if 'nb' in args.classifier_type:
+    tick_names.append('Multi. NB')
     clfs['<Multinomial Naive Bayes>'] = MultinomialNB()
 if 'lr' in args.classifier_type:
+    tick_names.append('LogReg')
     clfs['<Logistic Regression>'] = LogisticRegression(verbose=cverbosity)
 if 'svm' in args.classifier_type:
+    tick_names.append('Lin. SVM')
     clfs['<Linear SVM>'] = LinearSVC(verbose=cverbosity)
 
 # Train Classifiers on Extracted Features
@@ -128,3 +133,6 @@ if len(averages) > 1 or args.verbose == 0:
     print "**************************************************************"
 
 # Graphing
+# TODO: construct the output file based on the parameters!
+output_file = '../Figures/run_me_output.png'
+acc_bar_chart(baseline_score, averages.values(), tick_names, output_file)
