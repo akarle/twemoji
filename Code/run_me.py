@@ -1,8 +1,8 @@
 # Imports
 from load_data import load_data
+import feature_extractor
 import os
 import fnmatch
-from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.naive_bayes import MultinomialNB
 from sklearn.linear_model import LogisticRegression
 from sklearn.svm import LinearSVC
@@ -85,10 +85,9 @@ else:
 
 
 # Extract Features
-#TODO: use feature extractor class... just throwing this in for an ex
 verboseprint("Extracting features...")
-count_vect = CountVectorizer()
-x_counts = count_vect.fit_transform(data)
+extractor = feature_extractor.FeatureExtractor(1)
+x_counts = extractor.unary_features(data)
 verboseprint("Features shape: ", x_counts.shape)
 # print count_vect.vocabulary_
 verboseprint("*******")

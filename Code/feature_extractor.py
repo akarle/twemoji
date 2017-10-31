@@ -1,4 +1,7 @@
 # Imports
+import csv
+import os
+from sklearn.feature_extraction.text import CountVectorizer
 
 class FeatureExtractor():
     """ A class to extract text features """
@@ -6,9 +9,9 @@ class FeatureExtractor():
         self.arg = arg
 
     def unary_features(self, data):
-        """ Extract Unary Features """
-        pass
-
+        count_vect = CountVectorizer()
+        return count_vect.fit_transform(data)
+        
     def sent_analysis(self, data):
         """ Extracts Sentiment Analysis Features via sent_analysis.py """
         pass
