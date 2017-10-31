@@ -1,6 +1,4 @@
 # Imports
-import csv
-import os
 from sklearn.feature_extraction.text import CountVectorizer
 
 class FeatureExtractor():
