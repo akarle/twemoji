@@ -101,7 +101,7 @@ for f in os.listdir(data_path):
     if fnmatch.fnmatch(f, '*.labels') and label_path is None:
         label_path = os.path.join(data_path, f)
     elif fnmatch.fnmatch(f, '*.text') and text_path is None:
-        text_path = os.path.join(data_path, 'us_trial.text')
+        text_path = os.path.join(data_path, f)
 if label_path is None:
     raise Exception('Could not find a labels file.')
 if text_path is None:
