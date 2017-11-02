@@ -47,9 +47,6 @@ class FeatureCombinator():
             self.curr_perm += 1
 
             # Go through perm and combine the feats
-            # ----> use hstack from scipy
-            # ----> if classifier, get preds (TODO: cache them in self?)
-
             # perm is a tuple of feats to combine
             if perm[0][0] in self.feats.keys():
                 features = self.feats[perm[0]]
