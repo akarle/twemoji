@@ -51,9 +51,16 @@ class FeatureCombinator():
             # ----> if classifier, get preds (TODO: cache them in self?)
 
             # perm is a tuple of feats to combine
-            features = self.feats[perm[0]]
+            if perm[0][0] in self.feats.keys():
+                features = self.feats[perm[0]]
+            else:
+                features = self.clf_preds[perm[0]]
+
             for feat in perm[1:]:
-                features = hstack((features, self.feats[feat]))
+                if feat[0] in self.feats.keys():
+                    features = hstack((features, self.feats[feat]))
+                else:
+                    features = hstack((features, self.clf_preds[feat]))
 
             return (perm, features)
 
