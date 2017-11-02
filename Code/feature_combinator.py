@@ -25,17 +25,16 @@ class FeatureCombinator():
         """
         feat_names = self.feats.keys()
 
-        # TODO: COMBINE EACH COMB OF FEAT WITH 0 OR 1 CLF
-        # clf_names = self.sent_clfs.keys()
-        # combined_names = feat_names + clf_names
-
+        # Get all combos of text features
         combs = [comb for i in range(len(feat_names))
                  for comb in combinations(feat_names, i + 1)]
 
+        # Instantiate combined list to return (with clf_preds)
         pred_combs = combs[:]  # slice to copy
 
+        # Add a copy of combs with each prediction appended
         for pred in self.clf_preds.keys():
-            print pred_combs
+            pred_combs += [(pred,)]
             pred_combs += [combs[i] + (pred,) for i in range(len(combs))]
 
         print "Combos of feats given: ", pred_combs
