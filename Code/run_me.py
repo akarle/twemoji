@@ -1,7 +1,7 @@
 # Imports
 from plotting import acc_bar_chart
 from load_data import load_data
-import feature_extractor
+from feature_extractor import FeatureExtractor
 from feature_combinator import FeatureCombinator
 import os
 import fnmatch
@@ -131,7 +131,7 @@ verboseprint("*******")
 
 # Extract Features
 verboseprint("Extracting features...")
-extractor = feature_extractor.FeatureExtractor()
+extractor = FeatureExtractor()
 feats = extractor.extract_features(data, ['unigram'])
 
 # TODO : reconnect the sentiment classifiers! Load in from pickle!

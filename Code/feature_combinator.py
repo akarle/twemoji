@@ -3,12 +3,20 @@ from scipy.sparse import hstack
 
 
 class FeatureCombinator():
-    def __init__(self, feats, data=[], sent_clfs={}):
+    """ FeatureCombinator is a class to get all combos of feats
+
+        More specifically, given `text_feats` and `clf_preds` it will get
+        all permutations of all combos of text feats w one or zero clf preds.
+
+        It does not store actual feature vectors (due to memory cost), but
+        instead stores a representation of them, and one can iterate through
+        them using `next_perm`
+    """
+    def __init__(self, feats, preds={}):
         self.feats = feats  # A dict of {'feat_name': <feat vector>}
-        self.sent_clfs = sent_clfs  # best sent classifiers from pickle
+        self.clf_preds = preds  # A dict of {'clf_name': <predicted feats>}
         self.feat_perms = self.get_all_perms()  # all permutations of features
         self.curr_perm = 0  # the permutation to be returned
-        self.clf_preds = self.preds_from_clfs(data)  # cached predictions
 
     def get_all_perms(self):
         """ Returns a list of all permutations of text feats and clf preds
@@ -24,15 +32,14 @@ class FeatureCombinator():
         combs = [comb for i in range(len(feat_names))
                  for comb in combinations(feat_names, i + 1)]
 
-        print "Combos of feats given: ", combs
-        return combs
+        pred_combs = combs[:]  # slice to copy
 
-    def preds_from_clfs(self, data):
-        """ Cache the preds on the data for use in perm combos """
-        if len(data) == 0:
-            return None
-        else:
-            pass  # TODO
+        for pred in self.clf_preds.keys():
+            print pred_combs
+            pred_combs += [combs[i] + (pred,) for i in range(len(combs))]
+
+        print "Combos of feats given: ", pred_combs
+        return pred_combs
 
     def next_perm(self):
         """ Use feat extractor and clfs to get, combine, return a perm """
