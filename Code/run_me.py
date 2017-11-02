@@ -2,6 +2,7 @@
 from plotting import acc_bar_chart
 from load_data import load_data
 import feature_extractor
+from feature_combinator import FeatureCombinator
 import os
 import fnmatch
 from sklearn.naive_bayes import MultinomialNB
@@ -131,10 +132,17 @@ verboseprint("*******")
 # Extract Features
 verboseprint("Extracting features...")
 extractor = feature_extractor.FeatureExtractor()
-x_counts = extractor.extract_features(data,
-                                      ['unary', ('sent_analysis', 'baseline')])
+feats = extractor.extract_features(data, ['unigram'])
 
-verboseprint("Features shape: ", x_counts.shape)
+# TODO : reconnect the sentiment classifiers! Load in from pickle!
+
+# Use Combinator to Combine Features
+combinator = FeatureCombinator(feats)
+perm_name, x_counts = combinator.next_perm()
+
+# TODO: While loop above ^^ to go over all perms!
+
+# verboseprint("Features shape: ", x_counts.shape)
 # print count_vect.vocabulary_
 verboseprint("*******")
 
