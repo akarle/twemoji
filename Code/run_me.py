@@ -14,7 +14,10 @@ import numpy as np
 import argparse
 import random
 
-# Parse arguments
+# ##############################################
+#               PARSE ARGUMENTS
+# ##############################################
+
 classops = ['nb', 'lr', 'svm']
 parser = argparse.ArgumentParser(
     description="Run emoji prediction classifiers and output results.")
@@ -76,7 +79,11 @@ verboseprint(runstr)
 verboseprint("*******")
 
 
-# Helper functions
+# ##############################################
+#               HELPER FUNCTIONS
+# ##############################################
+
+
 def baseline_predict(labels):
     """ A function that predicts the most common label """
     # get the most common label:
@@ -90,7 +97,10 @@ def baseline_predict(labels):
     return preds
 
 
-# Load Data
+# ##############################################
+#                   LOAD DATA
+# ##############################################
+
 data_path = os.path.join('..', 'Data', args.data[0])
 if not os.path.isdir(data_path):
     raise Exception('Your specified data directory ' +
@@ -129,7 +139,11 @@ for i in range(10):
     verboseprint('|%6s' % labels[i], " ::: ", data[i])
 verboseprint("*******")
 
-# Extract Features
+
+# ##############################################
+#               EXTRACT FEATURES
+# ##############################################
+
 verboseprint("Extracting features...")
 extractor = FeatureExtractor()
 feats = extractor.extract_features(data, ['unigram'])
@@ -152,7 +166,10 @@ baseline_score = accuracy_score(labels, baseline_predict(labels))
 verboseprint("Baseline accuracy score: ", baseline_score)
 verboseprint("*******")
 
-# Instantiate Classifiers
+# ##############################################
+#           INSTANTIATE CLASSIFIERS
+# ##############################################
+
 clfs = {}
 tick_names = []  # seperate for graph tick labels
 if 'nb' in args.classifier_type:
@@ -164,6 +181,10 @@ if 'lr' in args.classifier_type:
 if 'svm' in args.classifier_type:
     tick_names.append('Lin. SVM')
     clfs['<Linear SVM>'] = LinearSVC(verbose=cverbosity)
+
+# ##############################################
+#           TRAIN AND EVALUATE CLFS
+# ##############################################
 
 # Train Classifiers on Extracted Features
 averages = {}
@@ -186,7 +207,10 @@ if len(averages) > 1 or args.verbose == 0:
         print '*', '%-40s' % (c,), '|', '%-15s' % (str(averages[c]),), '*'
     print "**************************************************************"
 
-# Graphing
+# ##############################################
+#               GRAPH EVALUATIONS
+# ##############################################
+
 # TODO: construct the output file based on the parameters!
 output_file = '../Figures/run_me_output.png'
 acc_bar_chart(baseline_score, averages.values(), tick_names, output_file)
