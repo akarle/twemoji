@@ -48,13 +48,13 @@ class FeatureCombinator():
 
             # Go through perm and combine the feats
             # perm is a tuple of feats to combine
-            if perm[0][0] in self.feats.keys():
+            if perm[0] in self.feats.keys():
                 features = self.feats[perm[0]]
             else:
                 features = self.clf_preds[perm[0]]
 
             for feat in perm[1:]:
-                if feat[0] in self.feats.keys():
+                if feat in self.feats.keys():
                     features = hstack((features, self.feats[feat]))
                 else:
                     features = hstack((features, self.clf_preds[feat]))

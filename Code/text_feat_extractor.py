@@ -2,7 +2,7 @@
 from sklearn.feature_extraction.text import CountVectorizer
 
 
-class FeatureExtractor():
+class TextFeatureExtractor():
     """ A class to extract text features """
     def __init__(self):
         # A mapping of keywords to functions (for use in extract features)

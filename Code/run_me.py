@@ -1,14 +1,14 @@
 # Imports
 from plotting import acc_bar_chart
 from load_data import load_data
-from feature_extractor import FeatureExtractor
+from text_feat_extractor import TextFeatureExtractor
 from feature_combinator import FeatureCombinator
 import os
 import fnmatch
 from sklearn.naive_bayes import MultinomialNB
 from sklearn.linear_model import LogisticRegression
 from sklearn.svm import LinearSVC
-from sklearn.model_selection import cross_val_score
+from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score
 import numpy as np
 import argparse
@@ -145,14 +145,13 @@ verboseprint("*******")
 # ##############################################
 
 verboseprint("Extracting features...")
-extractor = FeatureExtractor()
+extractor = TextFeatureExtractor()
 feats = extractor.extract_features(data, ['unigram'])
 
 # TODO : reconnect the sentiment classifiers! Load in from pickle!
 
 # Use Combinator to Combine Features
 combinator = FeatureCombinator(feats)
-perm_name, x_counts = combinator.next_perm()
 
 # TODO: While loop above ^^ to go over all perms!
 
@@ -186,25 +185,46 @@ if 'svm' in args.classifier_type:
 #           TRAIN AND EVALUATE CLFS
 # ##############################################
 
+# Dict of scores with clf name as key
+scores = {}
+
 # Train Classifiers on Extracted Features
-averages = {}
-for c in clfs:
-    clfs[c].fit(x_counts, labels)
-    # Evaluate Classifier
-    scores = cross_val_score(clfs[c], x_counts, labels, cv=5, n_jobs=-1)
-    averages[c] = np.mean(scores)
-    verboseprint('Average accuracy score for', c, 'with unigrams: ',
-                 np.mean(scores))
-    verboseprint("*******")
+# Use FeatureCombinator to loop through all combos
+feat_perm = combinator.next_perm()
+
+while feat_perm is not None:
+    print "Current feat_perm: ", feat_perm[0]
+    print "Features Shape: ", feat_perm[1].shape
+
+    # Split data into train and test:
+    X_train, X_test, y_train, y_test = train_test_split(
+        feat_perm[1], labels, test_size=0.30, random_state=0)
+
+    for c in clfs:
+        # Train (and Tune Hyperparams)
+        clfs[c].fit(X_train, y_train)
+
+        # Score, save score
+        preds = clfs[c].predict(X_test)
+        score = accuracy_score(y_test, preds)
+        scores[c] = score
+
+        verboseprint("Average accuracy score for %s with feats %s: %f"
+                     % (c, feat_perm[0], score))
+        verboseprint("*******")
+
+    # Go to next feature permutation
+    feat_perm = combinator.next_perm()
+
 
 # Print comparison table
-if len(averages) > 1 or args.verbose == 0:
+if len(scores) > 1 or args.verbose == 0:
     print 'Summary:'
     print "**************************************************************"
     print '*', '%-40s' % ('Classifier',), '|', '%-15s' % ('Score',), '*'
     print '*', '---------------------------------------------------------- *'
-    for c in averages:
-        print '*', '%-40s' % (c,), '|', '%-15s' % (str(averages[c]),), '*'
+    for c in scores:
+        print '*', '%-40s' % (c,), '|', '%-15s' % (str(scores[c]),), '*'
     print "**************************************************************"
 
 # ##############################################
@@ -213,4 +233,4 @@ if len(averages) > 1 or args.verbose == 0:
 
 # TODO: construct the output file based on the parameters!
 output_file = '../Figures/run_me_output.png'
-acc_bar_chart(baseline_score, averages.values(), tick_names, output_file)
+acc_bar_chart(baseline_score, scores.values(), tick_names, output_file)

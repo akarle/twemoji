@@ -1,5 +1,5 @@
 # Imports
-from feature_extractor import FeatureExtractor
+from text_feat_extractor import TextFeatureExtractor
 from feature_combinator import FeatureCombinator
 from load_data import load_sent140
 import os
@@ -31,7 +31,7 @@ data = [trdata, trlabels, tedata, telabels]
 
 # Use FeatureExtractor (FE) to extract features
 # FE will store the extracted features
-fe = FeatureExtractor()
+fe = TextFeatureExtractor()
 feats = fe.extract_features(['this is a test string',
                             'twemoji lets go baby'],
                             feats_to_extract)
@@ -50,10 +50,10 @@ fc = FeatureCombinator(feats)
 #           TRAIN AND EVALUATE CLFS
 # ##############################################
 
-perm = fc.next_perm()
-while perm is not None:
-    print "Current perm: ", perm[0]
-    print "Features Shape: ", perm[1].shape
+feat_perm = fc.next_perm()
+while feat_perm is not None:
+    print "Current perm: ", feat_perm[0]
+    print "Features Shape: ", feat_perm[1].shape
     for clf in clfs:
         # Train (and Tune Hyperparams)
 
@@ -62,7 +62,7 @@ while perm is not None:
         # Add best clf to list of clfs for pickle
         pass
 
-    perm = fc.next_perm()
+    feat_perm = fc.next_perm()
 
 # ##############################################
 #               GRAPH EVALUATIONS
