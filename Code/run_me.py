@@ -146,7 +146,7 @@ verboseprint("*******")
 
 verboseprint("Extracting features...")
 extractor = TextFeatureExtractor()
-feats = extractor.extract_features(data, ['unigram'])
+feats = extractor.extract_features(data, ['unigram', 'bigram'])
 
 # TODO : reconnect the sentiment classifiers! Load in from pickle!
 
@@ -207,7 +207,8 @@ while feat_perm is not None:
         # Score, save score
         preds = clfs[c].predict(X_test)
         score = accuracy_score(y_test, preds)
-        scores[c] = score
+        score_key = c + str(feat_perm[0])
+        scores[score_key] = score
 
         verboseprint("Average accuracy score for %s with feats %s: %f"
                      % (c, feat_perm[0], score))
