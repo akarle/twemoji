@@ -220,16 +220,15 @@ verboseprint("Baseline accuracy score: ", baseline_score)
 verboseprint("*******")
 
 # Print comparison table
-if len(scores) > 1 or args.verbose == 0:
-    print 'Summary:'
-    print "*" * 92
-    print '*', '%-70s' % ('Classifier',), '|', '%-15s' % ('Score',), '*'
-    print '*', '-' * 88, '*'
-    for c in scores:
-        print '*', '%-70s' % (c,), '|', '%-15s' % ("",), '*'
-        for fcombo, score in scores[c]:
-            print '*', '     %-65s' % (fcombo,), '|', \
-                  '%-15s' % (str(score),), '*'
+print 'Summary:'
+print "*" * 92
+print '*', '%-70s' % ('Classifier',), '|', '%-15s' % ('Score',), '*'
+print '*', '-' * 88, '*'
+for c in scores:
+    print '*', '%-70s' % (c,), '|', '%-15s' % ("",), '*'
+    for fcombo, score in scores[c]:
+        print '*', '     %-65s' % (fcombo,), '|', \
+              '%-15s' % (str(score),), '*'
     print "*" * 92
 
 # ##############################################
@@ -246,7 +245,7 @@ for c in scores:
         labels.append(label)
         values.append(value)
     acc_bar_chart(
-        c + " (n=" + str(args.num_instances[0]) + ")",
+        c + " (n=" + str(dcount) + ")",
         desc,
         baseline_score,
         values,
