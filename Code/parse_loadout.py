@@ -77,9 +77,9 @@ def parse_loadout(loadout_name):
 
 def build_regex(punc, single):
     regex = ""
-    regex += "[a-zA-Z0-9"
+    regex += "['a-zA-Z0-9"
     if not punc:
-        regex += "-!$%^&#*()_+|~=`{}\[\]:\";'<>?,.\/"
+        regex += "-!$%^&#*()_+|~=`{}\[\]:\";<>?,.\/"
     regex += "]"
     if not single:
         regex += regex
