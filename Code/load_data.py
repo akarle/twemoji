@@ -40,7 +40,7 @@ def load_data(data_file_path, label_file_path, num_instances=float('inf')):
     return (data, labels, count)
 
 
-def load_sent140(data_path):
+def load_sent140(data_path, word_limit=float('inf')):
     """ A func to load in the sentiment140 dataset
 
         data_path leads to a dir with contents test.csv and train.csv
@@ -51,14 +51,27 @@ def load_sent140(data_path):
         labels = []
         text = []
         with open(file_path, 'r') as f:
+            unicode_err_count = 0
+            word_count = 0
             reader = csv.reader(f, delimiter=',', quotechar='\"')
             for l in reader:
-                labels.append(l[0])
-                text.append(l[-1].rstrip())
-                if len(l) != 6:
-                    print "CSV PARSE ERROR"
+                if word_count >= word_limit:
+                    break
+
+                word = l[0].rstrip()
+
+                # Only extract strings without unicode errors!
+                try:
+                    word.decode('utf-8')  # attempt a decode
+                    text.append(word)  # append if success
+                    labels.append(l[-1])
+                    word_count += 1
+
+                except:
+                    unicode_err_count += 1
 
         labels = map(int, labels)
+        print 'Unicode Error Count: ', unicode_err_count
         return text, labels
 
     train_file = os.path.join(data_path, 'train.csv')
