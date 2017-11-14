@@ -10,7 +10,8 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.svm import LinearSVC
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score
-import numpy as np
+# import numpy as np
+from baseline import baseline_predict
 import argparse
 import random
 from parse_loadout import parse_loadout as pl
@@ -96,24 +97,6 @@ verboseprint("*******")
 
 
 # ##############################################
-#               HELPER FUNCTIONS
-# ##############################################
-
-
-def baseline_predict(labels):
-    """ A function that predicts the most common label """
-    # get the most common label:
-    labels_array = np.array(labels)
-    mc_label = np.argmax(np.bincount(labels_array))
-    verboseprint("Most common label is ", mc_label)
-
-    # return an array of the most common label (one per data case)
-    preds = np.multiply(mc_label, np.ones(len(labels)))
-    # print preds
-    return preds
-
-
-# ##############################################
 #                   LOAD DATA
 # ##############################################
 
@@ -169,17 +152,6 @@ feats = extractor.extract_features(data, ftyps, anl)
 # Use Combinator to Combine Features
 combinator = FeatureCombinator(feats)
 
-# TODO: While loop above ^^ to go over all perms!
-
-# verboseprint("Features shape: ", x_counts.shape)
-# print count_vect.vocabulary_
-verboseprint("*******")
-
-# Baseline score
-verboseprint("Calculating baseline...")
-baseline_score = accuracy_score(labels, baseline_predict(labels))
-verboseprint("Baseline accuracy score: ", baseline_score)
-verboseprint("*******")
 
 # ##############################################
 #           INSTANTIATE CLASSIFIERS
@@ -233,6 +205,15 @@ while feat_perm is not None:
     # Go to next feature permutation
     feat_perm = combinator.next_perm()
 
+
+# Baseline score
+verboseprint("*******")
+verboseprint("Calculating baseline...")
+mc_label, baseline_preds = baseline_predict(y_test)
+baseline_score = accuracy_score(y_test, baseline_preds)
+verboseprint("Most common label is: ", mc_label)
+verboseprint("Baseline accuracy score: ", baseline_score)
+verboseprint("*******")
 
 # Print comparison table
 if len(scores) > 1 or args.verbose == 0:
