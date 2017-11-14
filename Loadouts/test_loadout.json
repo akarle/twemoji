@@ -4,10 +4,9 @@
 		"lr"
 	],
 	"preprocessing": [
-		"remove-common-words",
 		"lowercase",
-		"strip-punctuation",
-		"strip-accents"
+		"strip-accents",
+		"strip-at-mentions"
 	],
 	"text-features": [
 		"unigrams",

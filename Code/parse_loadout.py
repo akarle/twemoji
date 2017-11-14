@@ -28,7 +28,11 @@ Text Features:
 
 def parse_loadout(loadout_name):
     """
-    Returns
+    Returns 4-tuple:
+        classifiers: list
+        preprocessing: list
+        analyzer: analyzer
+        features: list
     """
     loadout_path = os.path.join("..", "Loadouts", loadout_name + ".json")
     with open(loadout_path) as file:
@@ -40,31 +44,44 @@ def parse_loadout(loadout_name):
             stop_words = [line.rstrip() for line in swfile.readlines()]
         else:
             stop_words = None
+        if 'strip-at-mentions' in loadout['preprocessing']:
+            if stop_words is None:
+                stop_words = []
+                stop_words.append('user')
         if 'strip-accents' in loadout['preprocessing']:
             strip_accents = 'unicode'
         else:
             strip_accents = None
         strip_punctation = 'strip-punctuation' in loadout['preprocessing']
         count_singles = 'count-singles' in loadout['preprocessing']
-        strip_at_mentions = 'strip-at-mentions' in loadout['preprocessing']
         cv = CountVectorizer(strip_accents=strip_accents, lowercase=lowercase,
                              stop_words=stop_words, token_pattern=build_regex(
                                  strip_punctation,
                                  count_singles,
-                                 strip_at_mentions
                              ))
-        return cv.build_analyzer()
+        # Manual preprocessing
+        manpre = []
+        if 'spell-correction' in loadout['preprocessing']:
+            manpre.append('spell-correction')
+        if 'remove-location' in loadout['preprocessing']:
+            manpre.append('remove-location')
+        if 'pos-tags' in loadout['preprocessing']:
+            manpre.append('pos-tags')
+        return(
+            loadout['classifiers'],
+            manpre,
+            cv.build_analyzer(),
+            loadout['text-features']
+        )
 
 
-def build_regex(punc, single, ats):
+def build_regex(punc, single):
     regex = ""
     regex += "[a-zA-Z0-9"
     if not punc:
-        regex += "\"'!\$%\^&\*()\-_=\+\\\{\}\[\]:;\?/><\.,"
+        regex += "-!$%^&#*()_+|~=`{}\[\]:\";'<>?,.\/"
     regex += "]"
     if not single:
         regex += regex
-    if ats:
-        regex = "^(?!@)" + regex
     regex += "+"
     return regex
