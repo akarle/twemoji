@@ -14,6 +14,7 @@ import numpy as np
 import argparse
 import random
 from parse_loadout import parse_loadout as pl
+import time
 
 # ##############################################
 #               PARSE ARGUMENTS
@@ -189,19 +190,20 @@ clfs = {}
 tick_names = []  # seperate for graph tick labels
 if 'nb' in cl:
     tick_names.append('Multi. NB')
-    clfs['<Multinomial Naive Bayes>'] = MultinomialNB()
+    clfs['Multinomial Naive Bayes'] = MultinomialNB()
 if 'lr' in cl:
     tick_names.append('LogReg')
-    clfs['<Logistic Regression>'] = LogisticRegression(verbose=cverbosity)
+    clfs['Logistic Regression'] = LogisticRegression(verbose=cverbosity)
 if 'svm' in cl:
     tick_names.append('Lin. SVM')
-    clfs['<Linear SVM>'] = LinearSVC(verbose=cverbosity)
+    clfs['Linear SVM'] = LinearSVC(verbose=cverbosity)
 
 # ##############################################
 #           TRAIN AND EVALUATE CLFS
 # ##############################################
 
-# Dict of scores with clf name as key
+# Dict of {Classifer : [(feat_combo, score)]}
+# That is, classifer mapped to a list of tuples of (feat_combo, score)
 scores = {}
 
 # Train Classifiers on Extracted Features
@@ -223,8 +225,9 @@ while feat_perm is not None:
         # Score, save score
         preds = clfs[c].predict(X_test)
         score = accuracy_score(y_test, preds)
-        score_key = c + str(feat_perm[0])
-        scores[score_key] = score
+        if c not in scores:
+            scores[c] = []
+        scores[c].append((str(feat_perm[0]), score))
 
         verboseprint("Average accuracy score for %s with feats %s: %f"
                      % (c, feat_perm[0], score))
@@ -237,17 +240,31 @@ while feat_perm is not None:
 # Print comparison table
 if len(scores) > 1 or args.verbose == 0:
     print 'Summary:'
-    print "**************************************************************"
-    print '*', '%-40s' % ('Classifier',), '|', '%-15s' % ('Score',), '*'
-    print '*', '---------------------------------------------------------- *'
+    print "*" * 92
+    print '*', '%-70s' % ('Classifier',), '|', '%-15s' % ('Score',), '*'
+    print '*', '-' * 88, '*'
     for c in scores:
-        print '*', '%-40s' % (c,), '|', '%-15s' % (str(scores[c]),), '*'
-    print "**************************************************************"
+        print '*', '%-70s' % (c,), '|', '%-15s' % ("",), '*'
+        for fcombo, score in scores[c]:
+            print '*', '     %-65s' % (fcombo,), '|', '%-15s' % (str(score),), '*'
+    print "*" * 92
 
 # ##############################################
 #               GRAPH EVALUATIONS
 # ##############################################
 
 # TODO: construct the output file based on the parameters!
-# output_file = '../Figures/run_me_output.png'
-# acc_bar_chart(baseline_score, scores.values(), tick_names, output_file)
+for c in scores:
+    output_file = '../Figures/' + c + '_out_' + time.strftime("%Y%m%d-%H%M%S") + '.png'
+    labels = []
+    values = []
+    for label, value in scores[c]:
+        labels.append(label)
+        values.append(value)
+    acc_bar_chart(
+        c,
+        baseline_score,
+        values,
+        labels,
+        output_file
+    )
