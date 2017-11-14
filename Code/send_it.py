@@ -1,6 +1,9 @@
 # Imports
 from text_feat_extractor import TextFeatureExtractor
 from feature_combinator import FeatureCombinator
+from sklearn.metrics import accuracy_score
+import argparse
+from baseline import baseline_predict
 from load_data import load_sent140
 import os
 
@@ -10,6 +13,18 @@ import os
 
 # --> thinking sim args to run_me here...
 # TODO
+parser = argparse.ArgumentParser(
+    description="Train sentiment classifiers output results.")
+
+parser.add_argument('-n',
+                    nargs=1,
+                    type=int,
+                    help='number of data entries to train/evaluate on',
+                    metavar='N',
+                    dest='num_instances')
+
+args = parser.parse_args()
+
 # examples
 feats_to_extract = ['unigram', 'bigram']
 clfs = ['nb', 'lr']
@@ -19,8 +34,12 @@ clfs = ['nb', 'lr']
 # ##############################################
 
 data_path = os.path.join('..', 'Data', 'sent140', 'raw')
-trdata, trlabels, tedata, telabels = load_sent140(data_path)
-data = [trdata, trlabels, tedata, telabels]
+
+if args.num_instances:
+    X_train, y_train, X_test, y_test = load_sent140(data_path,
+                                                    args.num_instances[0])
+else:
+    X_train, y_train, X_test, y_test = load_sent140(data_path)
 
 # Randomize Data
 # TODO
@@ -32,9 +51,7 @@ data = [trdata, trlabels, tedata, telabels]
 # Use FeatureExtractor (FE) to extract features
 # FE will store the extracted features
 fe = TextFeatureExtractor()
-feats = fe.extract_features(['this is a test string',
-                            'twemoji lets go baby'],
-                            feats_to_extract)
+feats = fe.extract_features(X_train, feats_to_extract)
 
 # use FeatureCombnator to get all feat combinations
 fc = FeatureCombinator(feats)
@@ -63,6 +80,14 @@ while feat_perm is not None:
         pass
 
     feat_perm = fc.next_perm()
+
+
+# Baseline score
+print "*******"
+print "Calculating baseline..."
+baseline_score = accuracy_score(y_test, baseline_predict(y_test))
+print "Baseline accuracy score: ", baseline_score
+print "*******"
 
 # ##############################################
 #               GRAPH EVALUATIONS
