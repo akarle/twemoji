@@ -68,10 +68,10 @@ def parse_loadout(loadout_name):
         if 'pos-tags' in loadout['preprocessing']:
             manpre.append('pos-tags')
         return(
-            loadout['classifiers'],
+            [c.encode('ascii') for c in loadout['classifiers']],
             manpre,
             cv.build_analyzer(),
-            loadout['text-features']
+            [f.encode('ascii') for f in loadout['text-features']]
         )
 
 

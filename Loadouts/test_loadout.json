@@ -4,12 +4,15 @@
 		"lr"
 	],
 	"preprocessing": [
+		"remove-common-words",
 		"lowercase",
 		"strip-accents",
-		"strip-at-mentions"
+		"strip-at-mentions",
+		"strip-punctuation",
+		"count-singles"
 	],
 	"text-features": [
-		"unigrams",
-		"bigrams"
+		"unigram",
+		"bigram"
 	]
 }
