@@ -97,8 +97,6 @@ while feat_perm is not None:
 
         # Score, save score
         preds = clfs[c].predict(curr_X_te)
-        # for i in range(100):
-            # print (preds[i], curr_y_te[i])
         score = accuracy_score(curr_y_te, preds)
         score_key = c + str(feat_perm[0])
         scores[score_key] = score
@@ -114,7 +112,9 @@ while feat_perm is not None:
 # Baseline score
 print "*******"
 print "Calculating baseline..."
-baseline_score = accuracy_score(curr_y_te, baseline_predict(curr_y_te))
+mc_label, baseline_preds = baseline_predict(curr_y_te)
+baseline_score = accuracy_score(curr_y_te, baseline_preds)
+print "Most common label: ", mc_label
 print "Baseline accuracy score: ", baseline_score
 print "*******"
 
