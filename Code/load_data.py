@@ -51,14 +51,24 @@ def load_sent140(data_path):
         labels = []
         text = []
         with open(file_path, 'r') as f:
+            unicode_err_count = 0
             reader = csv.reader(f, delimiter=',', quotechar='\"')
             for l in reader:
                 labels.append(l[0])
-                text.append(l[-1].rstrip())
+                word = l[-1].rstrip()
+                try:
+                    uword = word.decode('utf-8')
+                except:
+                    unicode_err_count += 1
+                    uword = word.decode('utf-8', 'ignore')
+                    # print 'ERROR' + word.decode('utf-8', 'ignore')
+
+                text.append(uword)
                 if len(l) != 6:
                     print "CSV PARSE ERROR"
 
         labels = map(int, labels)
+        print 'Unicode Error Count: ', unicode_err_count
         return text, labels
 
     train_file = os.path.join(data_path, 'train.csv')
