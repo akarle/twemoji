@@ -81,12 +81,13 @@ else:
 cverbosity = args.verbose >= 2
 
 if args.loadout is not None:
-    cl, pre, anl, ftyps = pl(args.loadout[0])
+    cl, pre, anl, ftyps, desc = pl(args.loadout[0])
 else:
     cl = args.classifier_type
     pre = None
     anl = None
     ftyps = ['unigram']
+    desc = ""
 
 verboseprint("*******")
 runstr = "Running " + str(cl) + \
@@ -245,7 +246,8 @@ for c in scores:
         labels.append(label)
         values.append(value)
     acc_bar_chart(
-        c,
+        c + " (n=" + str(args.num_instances[0]) + ")",
+        desc,
         baseline_score,
         values,
         labels,
