@@ -58,20 +58,17 @@ def load_sent140(data_path, word_limit=float('inf')):
                 if word_count >= word_limit:
                     break
 
-                labels.append(l[0])
-                word = l[-1].rstrip()
+                word = l[0].rstrip()
 
                 # Only extract strings without unicode errors!
                 try:
-                    text.append(word.decode('utf-8'))
+                    word.decode('utf-8')  # attempt a decode
+                    text.append(word)  # append if success
+                    labels.append(l[-1])
                     word_count += 1
 
                 except:
                     unicode_err_count += 1
-
-                # text.append(uword)
-                if len(l) != 6:
-                    print "CSV PARSE ERROR"
 
         labels = map(int, labels)
         print 'Unicode Error Count: ', unicode_err_count
