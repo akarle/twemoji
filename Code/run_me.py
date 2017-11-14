@@ -16,6 +16,7 @@ import argparse
 import random
 from parse_loadout import parse_loadout as pl
 import time
+from spell_checker import correct_spelling
 
 # ##############################################
 #               PARSE ARGUMENTS
@@ -140,6 +141,15 @@ for i in range(10):
     verboseprint('|%6s' % labels[i], " ::: ", data[i])
 verboseprint("*******")
 
+
+# ##############################################
+#             MANUAL PREPROCESSING
+# ##############################################
+
+if 'spell-correction' in pre:
+    verboseprint("Spell correcting tweets....")
+    data = [correct_spelling(tweet) for tweet in data]
+    verboseprint("Done spell correction")
 
 # ##############################################
 #               EXTRACT FEATURES
