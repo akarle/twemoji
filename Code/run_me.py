@@ -14,6 +14,7 @@ from sklearn.metrics import accuracy_score
 from baseline import baseline_predict
 import argparse
 import random
+from parse_loadout import parse_loadout as pl
 
 # ##############################################
 #               PARSE ARGUMENTS
@@ -59,6 +60,13 @@ parser.add_argument('-s', '--silent',
                     help='set verbosity flag to silent',
                     dest='verbose')
 
+parser.add_argument('-l', '--loadout',
+                    nargs=1,
+                    default=None,
+                    help='name of loadout JSON file in Loadouts directiory',
+                    metavar='loadout',
+                    dest='loadout')
+
 args = parser.parse_args()
 
 if args.verbose >= 1:
@@ -71,9 +79,17 @@ else:
 
 cverbosity = args.verbose >= 2
 
+if args.loadout is not None:
+    cl, pre, anl, ftyps = pl(args.loadout[0])
+else:
+    cl = args.classifier_type
+    pre = None
+    anl = None
+    ftyps = ['unigram']
+
 verboseprint("*******")
-runstr = "Running " + str(args.classifier_type) + \
-         " classifier(s) on dataset " + args.data[0]
+runstr = "Running " + str(cl) + \
+    " classifier(s) on dataset " + args.data[0]
 if args.num_instances:
     runstr += " for " + str(args.num_instances[0]) + " tweets"
 verboseprint(runstr)
@@ -129,7 +145,7 @@ verboseprint("*******")
 
 verboseprint("Extracting features...")
 extractor = TextFeatureExtractor()
-feats = extractor.extract_features(data, ['unigram', 'bigram'])
+feats = extractor.extract_features(data, ftyps, anl)
 
 # TODO : reconnect the sentiment classifiers! Load in from pickle!
 
@@ -143,13 +159,13 @@ combinator = FeatureCombinator(feats)
 
 clfs = {}
 tick_names = []  # seperate for graph tick labels
-if 'nb' in args.classifier_type:
+if 'nb' in cl:
     tick_names.append('Multi. NB')
     clfs['<Multinomial Naive Bayes>'] = MultinomialNB()
-if 'lr' in args.classifier_type:
+if 'lr' in cl:
     tick_names.append('LogReg')
     clfs['<Logistic Regression>'] = LogisticRegression(verbose=cverbosity)
-if 'svm' in args.classifier_type:
+if 'svm' in cl:
     tick_names.append('Lin. SVM')
     clfs['<Linear SVM>'] = LinearSVC(verbose=cverbosity)
 
@@ -214,5 +230,5 @@ if len(scores) > 1 or args.verbose == 0:
 # ##############################################
 
 # TODO: construct the output file based on the parameters!
-output_file = '../Figures/run_me_output.png'
+# output_file = '../Figures/run_me_output.png'
 # acc_bar_chart(baseline_score, scores.values(), tick_names, output_file)

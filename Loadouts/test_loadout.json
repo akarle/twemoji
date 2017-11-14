@@ -1,0 +1,18 @@
+{
+	"classifiers": [
+		"nb",
+		"lr"
+	],
+	"preprocessing": [
+		"remove-common-words",
+		"lowercase",
+		"strip-accents",
+		"strip-at-mentions",
+		"strip-punctuation",
+		"count-singles"
+	],
+	"text-features": [
+		"unigram",
+		"bigram"
+	]
+}
