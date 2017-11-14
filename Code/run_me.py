@@ -227,7 +227,8 @@ if len(scores) > 1 or args.verbose == 0:
     for c in scores:
         print '*', '%-70s' % (c,), '|', '%-15s' % ("",), '*'
         for fcombo, score in scores[c]:
-            print '*', '     %-65s' % (fcombo,), '|', '%-15s' % (str(score),), '*'
+            print '*', '     %-65s' % (fcombo,), '|', \
+                  '%-15s' % (str(score),), '*'
     print "*" * 92
 
 # ##############################################
@@ -236,7 +237,8 @@ if len(scores) > 1 or args.verbose == 0:
 
 # TODO: construct the output file based on the parameters!
 for c in scores:
-    output_file = '../Figures/' + c + '_out_' + time.strftime("%Y%m%d-%H%M%S") + '.png'
+    output_file = '../Figures/' + c + \
+                  '_out_' + time.strftime("%Y%m%d-%H%M%S") + '.png'
     labels = []
     values = []
     for label, value in scores[c]:
