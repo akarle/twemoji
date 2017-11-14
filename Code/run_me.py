@@ -194,7 +194,7 @@ while feat_perm is not None:
 verboseprint("*******")
 verboseprint("Calculating baseline...")
 verbose = (args.verbose >= 1)
-baseline_score = accuracy_score(labels, baseline_predict(labels, verbose))
+baseline_score = accuracy_score(y_test, baseline_predict(y_test, verbose))
 verboseprint("Baseline accuracy score: ", baseline_score)
 verboseprint("*******")
 
