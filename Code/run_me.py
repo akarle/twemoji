@@ -16,19 +16,11 @@ import argparse
 import random
 from parse_loadout import parse_loadout as pl
 import time
-<<<<<<< HEAD
 import re
+from pos_tagger import pos_tag
+import unicodedata
 if os.name != 'nt':
     from spell_checker import correct_spelling
-from CMUTweetTagger import runtagger_parse
-=======
-from spell_checker import correct_spelling
-from pos_tagger import pos_tag
-<<<<<<< HEAD
->>>>>>> refactored loadout parsing and enabled pos tagging in run_me
-=======
->>>>>>> 1f240e6753b3d39033a5c480c1bd185e6da69943
-import unicodedata
 
 # ##############################################
 #               PARSE ARGUMENTS
