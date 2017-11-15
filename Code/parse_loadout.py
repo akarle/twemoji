@@ -63,6 +63,8 @@ def parse_loadout(loadout_name):
         manpre = []
         if 'spell-correction' in loadout['preprocessing']:
             manpre.append('spell-correction')
+        if 'word-clustering' in loadout['preprocessing']:
+            manpre.append('word-clustering')
         if 'remove-location' in loadout['preprocessing']:
             manpre.append('remove-location')
         if 'pos-tags' in loadout['preprocessing']:
