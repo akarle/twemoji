@@ -17,6 +17,8 @@ import random
 from parse_loadout import parse_loadout as pl
 import time
 import re
+from pos_tagger import pos_tag
+import unicodedata
 if os.name != 'nt':
     from spell_checker import correct_spelling
 
@@ -84,11 +86,11 @@ else:
 cverbosity = args.verbose >= 2
 
 if args.loadout is not None:
-    cl, pre, anl, ftyps, desc = pl(args.loadout[0])
+    cl, pre, cvargs, ftyps, desc = pl(args.loadout[0])
 else:
     cl = args.classifier_type
     pre = None
-    anl = None
+    cvargs = None
     ftyps = ['unigram']
     desc = ""
 
@@ -185,13 +187,22 @@ if 'word-clustering' in pre:
     dict.clear()
     clusters.close()
 
+# POS TAGGING
+if 'pos-tags' in pre:
+    verboseprint("Adding POS tags to tweets...")
+    data = pos_tag([u"".join([c for c in unicodedata.normalize(
+        'NFKD', unicode(d, 'utf8'))
+        if not unicodedata.combining(c)]) for d in data])
+    verboseprint("Finished adding POS tags")
+    verboseprint("*******")
+
 # ##############################################
 #               EXTRACT FEATURES
 # ##############################################
 
 verboseprint("Extracting features...")
 extractor = TextFeatureExtractor()
-feats = extractor.extract_features(data, ftyps, anl)
+feats = extractor.extract_features(data, ftyps, cvargs)
 
 # TODO : reconnect the sentiment classifiers! Load in from pickle!
 
