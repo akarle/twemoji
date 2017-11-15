@@ -17,7 +17,7 @@ import random
 from parse_loadout import parse_loadout as pl
 import time
 from spell_checker import correct_spelling
-from CMUTweetTagger import runtagger_parse
+from pos_tagger import pos_tag
 import unicodedata
 
 # ##############################################
@@ -84,11 +84,11 @@ else:
 cverbosity = args.verbose >= 2
 
 if args.loadout is not None:
-    cl, pre, anl, ftyps, desc = pl(args.loadout[0])
+    cl, pre, cvargs, ftyps, desc = pl(args.loadout[0])
 else:
     cl = args.classifier_type
     pre = None
-    anl = None
+    cvargs = None
     ftyps = ['unigram']
     desc = ""
 
@@ -128,15 +128,6 @@ if args.num_instances:
 else:
     data, labels, dcount = load_data(text_path, label_path)
 
-
-def remove_accents(input_str):
-    nfkd_form = unicodedata.normalize('NFKD', unicode(input_str, 'utf8'))
-    return u"".join([c for c in nfkd_form if not unicodedata.combining(c)])
-
-with open('pos.txt', 'w') as fp:
-    pos = runtagger_parse([remove_accents(t) for t in data])
-    fp.write(str(pos))
-
 # Randomize data order to prevent overfitting to subset of
 # data when running on fewer instances
 combined = list(zip(data, labels))
@@ -160,7 +151,16 @@ verboseprint("*******")
 if 'spell-correction' in pre:
     verboseprint("Spell correcting tweets....")
     data = [correct_spelling(tweet) for tweet in data]
-    verboseprint("Done spell correction")
+    verboseprint("Finished spell correction")
+    verboseprint("*******")
+
+if 'pos-tags' in pre:
+    verboseprint("Adding POS tags to tweets...")
+    data = pos_tag([u"".join([c for c in unicodedata.normalize(
+        'NFKD', unicode(d, 'utf8'))
+        if not unicodedata.combining(c)]) for d in data])
+    verboseprint("Finished adding POS tags")
+    verboseprint("*******")
 
 # ##############################################
 #               EXTRACT FEATURES
@@ -168,7 +168,7 @@ if 'spell-correction' in pre:
 
 verboseprint("Extracting features...")
 extractor = TextFeatureExtractor()
-feats = extractor.extract_features(data, ftyps, anl)
+feats = extractor.extract_features(data, ftyps, cvargs)
 
 # TODO : reconnect the sentiment classifiers! Load in from pickle!
 
