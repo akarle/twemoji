@@ -183,7 +183,7 @@ if 'word-clustering' in pre:
                         escaped += c
                 line = re.sub(r"\b%s\b" % escaped, dict[x], line)
         data_temp.append(line)
-
+    data = data_temp
     dict.clear()
     clusters.close()
 
