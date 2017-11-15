@@ -1,5 +1,6 @@
 # Imports
 from sklearn.feature_extraction.text import CountVectorizer
+import CMUTweetTagger
 
 
 class TextFeatureExtractor():
@@ -10,11 +11,15 @@ class TextFeatureExtractor():
                               'bigram': self.bigram_features}
 
     def unigram_features(self, data, analyzer):
-        count_vect = CountVectorizer(analyzer=analyzer)
+        a=lambda x: [[il[:2] for il in ol] for ol in CMUTweetTagger.runtagger_parse([x])]
+        flatten = lambda l: [item for sublist in l for item in sublist]
+        count_vect = CountVectorizer(tokenizer=lambda x: flatten(a(x)), strip_accents='unicode')
         return count_vect.fit_transform(data)
 
     def bigram_features(self, data, analyzer):
-        count_vect = CountVectorizer(ngram_range=(2, 2), analyzer=analyzer)
+        a=lambda x: [[il[:2] for il in ol] for ol in CMUTweetTagger.runtagger_parse([x])]
+        flatten = lambda l: [item for sublist in l for item in sublist]
+        count_vect = CountVectorizer(ngram_range=(2, 2), tokenizer=lambda x: flatten(a(x)), strip_accents='unicode')
         return count_vect.fit_transform(data)
 
     def extract_features(self, data, features_to_extract, analyzer='word'):

@@ -19,6 +19,8 @@ import time
 import re
 if os.name != 'nt':
     from spell_checker import correct_spelling
+from CMUTweetTagger import runtagger_parse
+import unicodedata
 
 # ##############################################
 #               PARSE ARGUMENTS
@@ -127,6 +129,15 @@ if args.num_instances:
                                      label_path, args.num_instances[0])
 else:
     data, labels, dcount = load_data(text_path, label_path)
+
+
+def remove_accents(input_str):
+    nfkd_form = unicodedata.normalize('NFKD', unicode(input_str, 'utf8'))
+    return u"".join([c for c in nfkd_form if not unicodedata.combining(c)])
+
+with open('pos.txt', 'w') as fp:
+    pos = runtagger_parse([remove_accents(t) for t in data])
+    fp.write(str(pos))
 
 # Randomize data order to prevent overfitting to subset of
 # data when running on fewer instances
