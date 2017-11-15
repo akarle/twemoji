@@ -9,8 +9,8 @@ from sklearn.naive_bayes import MultinomialNB
 from sklearn.linear_model import LogisticRegression
 from sklearn.svm import LinearSVC
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import accuracy_score
-# import numpy as np
+from sklearn.metrics import accuracy_score, confusion_matrix
+import numpy as np
 from baseline import baseline_predict
 import argparse
 import random
@@ -244,7 +244,9 @@ while feat_perm is not None:
         score = accuracy_score(y_test, preds)
         if c not in scores:
             scores[c] = []
-        scores[c].append((str(feat_perm[0]), score))
+
+        cm = confusion_matrix(y_test, preds, labels=np.arange(10))
+        scores[c].append((str(feat_perm[0]), score, cm))
 
         verboseprint("Average accuracy score for %s with feats %s: %f"
                      % (c, feat_perm[0], score))
@@ -270,7 +272,7 @@ print '*', '%-70s' % ('Classifier',), '|', '%-15s' % ('Score',), '*'
 print '*', '-' * 88, '*'
 for c in scores:
     print '*', '%-70s' % (c,), '|', '%-15s' % ("",), '*'
-    for fcombo, score in scores[c]:
+    for fcombo, score, _ in scores[c]:
         print '*', '     %-65s' % (fcombo,), '|', \
               '%-15s' % (str(score),), '*'
     print "*" * 92
@@ -285,9 +287,12 @@ for c in scores:
                   '_out_' + time.strftime("%Y%m%d-%H%M%S") + '.png'
     labels = []
     values = []
-    for label, value in scores[c]:
+    cms = []
+    for label, value, cm in scores[c]:
         labels.append(label)
         values.append(value)
+        cms.append(cm)
+
     acc_bar_chart(
         c + " (n=" + str(dcount) + ")",
         desc,
@@ -297,5 +302,12 @@ for c in scores:
         output_file
     )
 
-conf_file = os.path.join('..', 'Figures', 'conf_mat.png')
-plot_confusion_matrix(y_test, preds, conf_file)
+    # Find best confusion matrix
+    maxind = np.argmax(values)
+    max_cm = cms[maxind]
+    max_label = labels[maxind]
+
+    conf_file = '../Figures/' + c + 'CONF_MTX_' +\
+                time.strftime("%Y%m%d-%H%M%S") + '.png'
+
+    plot_confusion_matrix(max_cm, c, max_label, conf_file)

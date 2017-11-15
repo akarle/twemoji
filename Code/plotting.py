@@ -1,7 +1,5 @@
 # Imports
 from matplotlib import pyplot as plt
-import os
-from sklearn.metrics import confusion_matrix
 import itertools
 import numpy as np
 
@@ -25,7 +23,7 @@ def acc_bar_chart(title, desc, baseline, acc_scores, labels, output_file):
     plt.clf()
 
 
-def plot_confusion_matrix(gold, preds, output_file):
+def plot_confusion_matrix(cnf_mat, clf_name, feats_str, output_file):
     """ Creates and plots a confusion matrix for the predictions
 
         CITATION: THIS CODE HEAVILY ADAPTED FROM SCIKITLEARN:
@@ -46,9 +44,6 @@ def plot_confusion_matrix(gold, preds, output_file):
     classes = range(10)
     n_clss = len(classes)
 
-    # Plot the confusion matrix
-    cnf_mat = confusion_matrix(gold, preds, labels=classes)
-
     plt.imshow(cnf_mat, interpolation='nearest', cmap=plt.cm.Blues)
     plt.colorbar()
 
@@ -64,8 +59,10 @@ def plot_confusion_matrix(gold, preds, output_file):
     plt.xticks(ticks, classes)
     plt.yticks(ticks, classes)
 
-    plt.title('Emoji Confusion Matrix')
+    plt.suptitle('%s Emoji Confusion Matrix' % clf_name, fontweight='bold')
+    plt.title(feats_str)
     plt.ylabel('Gold Label')
     plt.xlabel('Predicted Label')
 
-    plt.show()
+    plt.savefig(output_file)
+    plt.clf()
