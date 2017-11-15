@@ -1,5 +1,5 @@
 # Imports
-from plotting import acc_bar_chart
+from plotting import acc_bar_chart, plot_confusion_matrix
 from load_data import load_data
 from text_feat_extractor import TextFeatureExtractor
 from feature_combinator import FeatureCombinator
@@ -296,3 +296,6 @@ for c in scores:
         labels,
         output_file
     )
+
+conf_file = os.path.join('..', 'Figures', 'conf_mat.png')
+plot_confusion_matrix(y_test, preds, conf_file)
