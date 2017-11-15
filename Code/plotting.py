@@ -8,9 +8,19 @@ import numpy as np
 
 def acc_bar_chart(title, desc, baseline, acc_scores, labels, output_file):
     """ Graph the given accuracies against each other and baseline """
+
+    # Graph the scores
     plt.title(title)
     plt.bar(range(1, len(acc_scores) + 1), acc_scores, tick_label=labels)
-    plt.axhline(baseline, color='r', label="baseline")
+    plt.axhline(baseline, color='r', label="baseline")  # baseline
+
+    # Give an appropriate bottom description
+    # desc is a string of a list... make it a list
+    descls = desc[1:-1].split(', ')
+    descls = [x[2:-1] for x in descls]  # get rid of the unicode u' in string
+    desc_str = "Preprocessing: " + ', '.join(descls)
+    plt.subplots_adjust(bottom=.15)
+    plt.text(.05, -.04, desc_str, fontsize=9, wrap=True)
     plt.savefig(output_file)
     plt.clf()
 
