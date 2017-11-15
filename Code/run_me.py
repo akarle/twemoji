@@ -10,6 +10,7 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.svm import LinearSVC
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score, confusion_matrix
+from sklearn.metrics import precision_recall_fscore_support
 import numpy as np
 from baseline import baseline_predict
 import argparse
@@ -239,8 +240,9 @@ scores = {}
 feat_perm = combinator.next_perm()
 
 while feat_perm is not None:
-    print "Current feat_perm: ", feat_perm[0]
-    print "Features Shape: ", feat_perm[1].shape
+    verboseprint("Current feat_perm: ", feat_perm[0])
+    verboseprint("Features Shape: ", feat_perm[1].shape)
+    verboseprint("******")
 
     # Split data into train and test:
     X_train, X_test, y_train, y_test = train_test_split(
@@ -253,14 +255,25 @@ while feat_perm is not None:
         # Score, save score
         preds = clfs[c].predict(X_test)
         score = accuracy_score(y_test, preds)
+
+        verboseprint("Classifer: ", c, " with features: ", feat_perm[0])
+        unique, counts = np.unique(preds, return_counts=True)
+        verboseprint('Predicted label counts: \n', dict(zip(unique, counts)))
+        unique, counts = np.unique(y_test, return_counts=True)
+        verboseprint('Gold label counts: \n', dict(zip(unique, counts)))
+        prf1 = precision_recall_fscore_support(y_test,
+                                               preds, average='weighted')
+        verboseprint('Weighted precision:', prf1[0])
+        verboseprint('Weighted recall:', prf1[1])
+        verboseprint('Weighted f1_score:', prf1[2])
         if c not in scores:
             scores[c] = []
 
         cm = confusion_matrix(y_test, preds, labels=np.arange(10))
         scores[c].append((str(feat_perm[0]), score, cm))
 
-        verboseprint("Average accuracy score for %s with feats %s: %f"
-                     % (c, feat_perm[0], score))
+        verboseprint("Average accuracy score: %f"
+                     % (score,))
         verboseprint("*******")
 
     # Go to next feature permutation
