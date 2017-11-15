@@ -16,10 +16,15 @@ import argparse
 import random
 from parse_loadout import parse_loadout as pl
 import time
+<<<<<<< HEAD
 import re
 if os.name != 'nt':
     from spell_checker import correct_spelling
 from CMUTweetTagger import runtagger_parse
+=======
+from spell_checker import correct_spelling
+from pos_tagger import pos_tag
+>>>>>>> refactored loadout parsing and enabled pos tagging in run_me
 import unicodedata
 
 # ##############################################
@@ -86,11 +91,11 @@ else:
 cverbosity = args.verbose >= 2
 
 if args.loadout is not None:
-    cl, pre, anl, ftyps, desc = pl(args.loadout[0])
+    cl, pre, cvargs, ftyps, desc = pl(args.loadout[0])
 else:
     cl = args.classifier_type
     pre = None
-    anl = None
+    cvargs = None
     ftyps = ['unigram']
     desc = ""
 
@@ -129,15 +134,6 @@ if args.num_instances:
                                      label_path, args.num_instances[0])
 else:
     data, labels, dcount = load_data(text_path, label_path)
-
-
-def remove_accents(input_str):
-    nfkd_form = unicodedata.normalize('NFKD', unicode(input_str, 'utf8'))
-    return u"".join([c for c in nfkd_form if not unicodedata.combining(c)])
-
-with open('pos.txt', 'w') as fp:
-    pos = runtagger_parse([remove_accents(t) for t in data])
-    fp.write(str(pos))
 
 # Randomize data order to prevent overfitting to subset of
 # data when running on fewer instances
@@ -196,13 +192,22 @@ if 'word-clustering' in pre:
     dict.clear()
     clusters.close()
 
+# POS TAGGING
+if 'pos-tags' in pre:
+    verboseprint("Adding POS tags to tweets...")
+    data = pos_tag([u"".join([c for c in unicodedata.normalize(
+        'NFKD', unicode(d, 'utf8'))
+        if not unicodedata.combining(c)]) for d in data])
+    verboseprint("Finished adding POS tags")
+    verboseprint("*******")
+
 # ##############################################
 #               EXTRACT FEATURES
 # ##############################################
 
 verboseprint("Extracting features...")
 extractor = TextFeatureExtractor()
-feats = extractor.extract_features(data, ftyps, anl)
+feats = extractor.extract_features(data, ftyps, cvargs)
 
 # TODO : reconnect the sentiment classifiers! Load in from pickle!
 
