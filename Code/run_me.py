@@ -17,7 +17,8 @@ import random
 from parse_loadout import parse_loadout as pl
 import time
 import re
-from spell_checker import correct_spelling
+if os.name != 'nt':
+    from spell_checker import correct_spelling
 
 # ##############################################
 #               PARSE ARGUMENTS
@@ -148,23 +149,24 @@ verboseprint("*******")
 # ##############################################
 
 # SPELL CORRECTION
-if 'spell-correction' in pre:
-    verboseprint("Spell correcting tweets....")
-    data = [correct_spelling(tweet) for tweet in data]
-    verboseprint("Done spell correction")
-    
+if os.name != 'nt':
+    if 'spell-correction' in pre:
+        verboseprint("Spell correcting tweets....")
+        data = [correct_spelling(tweet) for tweet in data]
+        verboseprint("Done spell correction")
+
 # WORD REPLACEMENT USING CLUSTERS
 if 'word-clustering' in pre:
     verboseprint("Word replacement using clusters....")
-    clusters_path = os.path.join('..', 'Data','50mpaths2.txt')
-    clusters = open(clusters_path,"r")
+    clusters_path = os.path.join('..', 'Data', '50mpaths2.txt')
+    clusters = open(clusters_path, "r")
     dict = {}
 
     for line in clusters:
         temp = re.split(r'\t+', line)
-        dict[temp[1]]=temp[0]
-        
-    data_temp = []      
+        dict[temp[1]] = temp[0]
+
+    data_temp = []
     for line in data:
         temp = line.split(' ')
         for x in temp:
@@ -172,13 +174,14 @@ if 'word-clustering' in pre:
                 y = list(x)
                 escaped = ""
                 for c in y:
-                    if c in ["-","[","]","\\","^","$","*",".","+",")","(","?","|","{","}"]:
+                    if c in ["-", "[", "]", "\\", "^", "$", "*", ".", "+",
+                             ")", "(", "?", "|", "{", "}"]:
                         escaped += ("\\"+c)
                     else:
                         escaped += c
-                line = re.sub(r"\b%s\b" % escaped,dict[x], line)
+                line = re.sub(r"\b%s\b" % escaped, dict[x], line)
         data_temp.append(line)
-        
+
     dict.clear()
     clusters.close()
 
