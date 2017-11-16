@@ -10,6 +10,8 @@ from sklearn.naive_bayes import MultinomialNB
 from load_data import load_sent140
 from sklearn.model_selection import train_test_split
 import os
+import pickle
+from sklearn.externals import joblib
 
 # ##############################################
 #               ARGUMENT PROCESSING
@@ -31,7 +33,6 @@ args = parser.parse_args()
 
 # examples
 feats_to_extract = ['unigram', 'bigram']
-# clfs = ['nb', 'lr']
 
 # ##############################################
 #                   LOAD DATA
@@ -81,6 +82,7 @@ clfs = {'nb': nb, 'lr': lr}
 #           TRAIN AND EVALUATE CLFS
 # ##############################################
 scores = {}
+best = {'clf': None, 'perm': None, 'score': 0}
 
 feat_perm = fc.next_perm()
 while feat_perm is not None:
@@ -105,7 +107,11 @@ while feat_perm is not None:
               % (c, feat_perm[0], score)
 
         # Add best clf to list of clfs for pickle
-        pass
+        if score > best['score']:
+            print "Found new best!"
+            best['score'] = score
+            best['clf'] = c
+            best['perm'] = feat_perm
 
     feat_perm = fc.next_perm()
 
@@ -128,5 +134,20 @@ print "*******"
 #               SAVE TOP CLFS
 # ##############################################
 
+# Pull best from evaluation from curr_best
+print "Best overall: %s with %s giving score %f" % \
+      (best['clf'], best['perm'][0], best['score'])
+
+# Retrain the model with the data
+clfs[best['clf']].fit(best['perm'][1], y_train)
+
 # Store the Classifiers in Pickle
-# TODO
+# Pickle the following:
+#     1. The trained classifier
+#     2. The FE used (with its CV's and all) for re-extraction on pred data
+#     3. The feat_perm list of feats for re-extraction on prediction data
+clf_name = best['clf']
+to_pikle = (clfs[clf_name], clf_name, fe.get_pickleables(), best['perm'][0])
+
+with open('sent.pkl', 'w') as f:
+    pickle.dump(to_pikle, f)

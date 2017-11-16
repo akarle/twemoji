@@ -19,7 +19,9 @@ from parse_loadout import parse_loadout as pl
 import time
 import re
 from pos_tagger import pos_tag
+import pickle
 import unicodedata
+from sent_predictor import predict_sent
 if os.name != 'nt':
     from spell_checker import correct_spelling
 
@@ -201,14 +203,25 @@ if 'pos-tags' in pre:
 #               EXTRACT FEATURES
 # ##############################################
 
-verboseprint("Extracting features...")
+verboseprint("*******")
+verboseprint("Loading pickled sentiment classifiers...")
+with open('sent.pkl', 'r') as f:
+    clf, clf_name, pickleables, perm = pickle.load(f)
+
+verboseprint("The best sent_clf stored is: %s with feats %s"
+             % (clf_name, perm))
+
+clf_feats = predict_sent(data, clf, clf_name, pickleables, perm)
+verboseprint("Sentiment prediction features complete")
+verboseprint("*******")
+
+verboseprint("Extracting text features...")
 extractor = TextFeatureExtractor()
 feats = extractor.extract_features(data, ftyps, cvargs)
 
-# TODO : reconnect the sentiment classifiers! Load in from pickle!
 
 # Use Combinator to Combine Features
-combinator = FeatureCombinator(feats)
+combinator = FeatureCombinator(feats, clf_feats)
 
 
 # ##############################################
