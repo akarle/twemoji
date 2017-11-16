@@ -81,3 +81,25 @@ def load_sent140(data_path, word_limit=float('inf')):
     tedata, telabels = parse_file(test_file)
 
     return (trdata, trlabels, tedata, telabels)
+
+
+def load_nrc_emotion_lexicon(data_path):
+    emolex = {}
+    emolex['anger'] = {}
+    emolex['anticipation'] = {}
+    emolex['disgust'] = {}
+    emolex['fear'] = {}
+    emolex['joy'] = {}
+    emolex['positive'] = {}
+    emolex['negative'] = {}
+    emolex['sadness'] = {}
+    emolex['surprise'] = {}
+    emolex['trust'] = {}
+    with open(data_path, 'rb') as fp:
+        reader = csv.reader(fp, delimiter='\t')
+        for row in reader:
+            print row
+            #emolex[row[1]][row[0]] = int(row[2])
+    # for d in emolex:
+    #     print d['phony']
+    return emolex

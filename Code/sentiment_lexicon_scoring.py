@@ -9,6 +9,12 @@ This requires that you've:
 from nltk.corpus import sentiwordnet as swn
 from nltk.stem import WordNetLemmatizer
 from CMUTweetTagger import runtagger_parse
+import os
+from load_data import load_sent140
+import csv
+import unicodedata
+import sys
+import random
 
 
 def sentiwordnet_score(text):
@@ -18,7 +24,9 @@ def sentiwordnet_score(text):
     returns: float, positive values are positive sentiment,
                     negative values are negative sentiment
     """
-    ws = [il[:2] for ol in runtagger_parse([text]) for il in ol]
+    nfkd_form = unicodedata.normalize('NFKD', unicode(text, 'utf8'))
+    utext = u"".join([c for c in nfkd_form if not unicodedata.combining(c)])
+    ws = [il[:2] for ol in runtagger_parse([utext]) for il in ol]
     # print ws
     acceptable_pos = ['N', 'O', 'S', 'Z', 'V', 'A', 'R']
     wnl = WordNetLemmatizer()
@@ -65,3 +73,48 @@ def ark_to_swn(pos):
         return 'r'
     else:
         return None
+
+
+def test_classifier(numinstances):
+    # data_path = os.path.join('..', 'Data', 'sent140')
+    # _, _, test, labels = load_sent140(data_path)
+    with open('../Data/sad.csv', 'rb') as csvfile:
+        reader = csv.reader(csvfile, delimiter=',')
+        data = []
+        for row in reader:
+            data.append(row)
+        random.shuffle(data)
+        pcorrect = 0.0
+        ncorrect = 0.0
+        pwrong = 0.0
+        nwrong = 0.0
+        count = 0
+        for row in data:
+            if row[1] == 'Sentiment':
+                continue
+            if count % 10 == 0:
+                sys.stdout.write('.')
+                sys.stdout.flush()
+            if count == numinstances:
+                break
+            try:
+                predict = sentiwordnet_classify(row[3])
+            except Exception:
+                continue
+            gold = int(row[1])
+            if (predict in [1, 0] and gold is 1 or
+                    predict is -1 and gold is 0):
+                if predict in [1, 0]:
+                    pcorrect += 1
+                else:
+                    ncorrect += 1
+            else:
+                if predict in [1, 0]:
+                    nwrong += 1
+                else:
+                    pwrong += 1
+            count += 1
+        acc = (pcorrect + ncorrect) / (pcorrect + ncorrect + pwrong + nwrong)
+        pre = pcorrect / (pcorrect + nwrong)
+        rec = pcorrect / (pcorrect + pwrong)
+        print '\n',  acc, pre, rec
