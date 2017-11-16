@@ -165,17 +165,17 @@ if 'word-clustering' in pre:
     verboseprint("Word replacement using clusters....")
     clusters_path = os.path.join('..', 'Data', '50mpaths2.txt')
     clusters = open(clusters_path, "r")
-    dict = {}
+    clusterdict = {}
 
     for line in clusters:
         temp = re.split(r'\t+', line)
-        dict[temp[1]] = temp[0]
+        clusterdict[temp[1]] = temp[0]
 
     data_temp = []
     for line in data:
         temp = line.split(' ')
         for x in temp:
-            if x in dict:
+            if x in clusterdict:
                 y = list(x)
                 escaped = ""
                 for c in y:
@@ -184,10 +184,10 @@ if 'word-clustering' in pre:
                         escaped += ("\\"+c)
                     else:
                         escaped += c
-                line = re.sub(r"\b%s\b" % escaped, dict[x], line)
+                line = re.sub(r"\b%s\b" % escaped, clusterdict[x], line)
         data_temp.append(line)
     data = data_temp
-    dict.clear()
+    clusterdict.clear()
     clusters.close()
 
 # POS TAGGING
