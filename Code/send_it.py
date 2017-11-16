@@ -10,6 +10,8 @@ from sklearn.naive_bayes import MultinomialNB
 from load_data import load_sent140
 from sklearn.model_selection import train_test_split
 import os
+import pickle
+from sklearn.externals import joblib
 
 # ##############################################
 #               ARGUMENT PROCESSING
@@ -140,3 +142,12 @@ print "Best overall: %s with %s giving score %f" % \
 clfs[best['clf']].fit(best['perm'][1], y_train)
 
 # Store the Classifiers in Pickle
+# Pickle the following:
+#     1. The trained classifier
+#     2. The FE used (with its CV's and all) for re-extraction on pred data
+#     3. The feat_perm list of feats for re-extraction on prediction data
+clf_name = best['clf']
+to_pikle = (clfs[clf_name], clf_name, fe.get_pickleables(), best['perm'][0])
+
+with open('sent.pkl', 'w') as f:
+    pickle.dump(to_pikle, f)
