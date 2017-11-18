@@ -203,13 +203,10 @@ if 'pos-tags' in pre:
 #               EXTRACT FEATURES
 # ##############################################
 
-verboseprint("Extracting text features...")
-extractor = TextFeatureExtractor()
-feats = extractor.extract_features(data, ftyps, cvargs)
-
 clf_feats = {}
 
 if 'sent-class' in ftyps:
+    ftyps.remove('sent-class')
     verboseprint("*******")
     verboseprint("Loading pickled sentiment classifiers...")
     with open('sent.pkl', 'r') as f:
@@ -221,6 +218,10 @@ if 'sent-class' in ftyps:
     clf_feats = predict_sent(data, clf, clf_name, pickleables, perm)
     verboseprint("Sentiment prediction features complete")
     verboseprint("*******")
+
+verboseprint("Extracting text features...")
+extractor = TextFeatureExtractor()
+feats = extractor.extract_features(data, ftyps, cvargs)
 
 
 # Use Combinator to Combine Features
