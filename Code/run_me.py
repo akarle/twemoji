@@ -1,6 +1,6 @@
 # Imports
 from plotting import acc_bar_chart, plot_confusion_matrix
-from load_data import load_data
+from load_data import load_data, load_sent140
 from text_feat_extractor import TextFeatureExtractor
 from feature_combinator import FeatureCombinator
 import os
@@ -49,6 +49,14 @@ parser.add_argument('-d', '--data',
                           (must be in Data directory)',
                     metavar='dataset',
                     dest='data')
+
+parser.add_argument('-p', '--pipeline',
+                    nargs=1,
+                    required=True,
+                    help='state whether you are training sentiment classifiers \
+                          or training emoji classifiers',
+                    metavar='pipeline',
+                    dest='pipeline')
 
 parser.add_argument('-n',
                     nargs=1,
@@ -115,23 +123,33 @@ if not os.path.isdir(data_path):
     raise Exception('Your specified data directory ' +
                     data_path + ' does not exist.')
 
-label_path = None
-text_path = None
-for f in os.listdir(data_path):
-    if fnmatch.fnmatch(f, '*.labels') and label_path is None:
-        label_path = os.path.join(data_path, f)
-    elif fnmatch.fnmatch(f, '*.text') and text_path is None:
-        text_path = os.path.join(data_path, f)
-if label_path is None:
-    raise Exception('Could not find a labels file.')
-if text_path is None:
-    raise Exception('Could not find a text file.')
+if args.pipeline == 'emoji':
+    label_path = None
+    text_path = None
+    for f in os.listdir(data_path):
+        if fnmatch.fnmatch(f, '*.labels') and label_path is None:
+            label_path = os.path.join(data_path, f)
+        elif fnmatch.fnmatch(f, '*.text') and text_path is None:
+            text_path = os.path.join(data_path, f)
+    if label_path is None:
+        raise Exception('Could not find a labels file.')
+    if text_path is None:
+        raise Exception('Could not find a text file.')
 
-if args.num_instances:
-    data, labels, dcount = load_data(text_path,
-                                     label_path, args.num_instances[0])
+    if args.num_instances:
+        data, labels, dcount = load_data(text_path,
+                                         label_path, args.num_instances[0])
+    else:
+        data, labels, dcount = load_data(text_path, label_path)
+
+elif args.pipeline[0] == 'sent':
+    _, _, _, data, labels, dcount = \
+        load_sent140(data_path, args.num_instances[0])
+    # TODO: add invalid arg handling!
+
 else:
-    data, labels, dcount = load_data(text_path, label_path)
+    raise Exception('Invalid pipeline choice: choose either `emoji` or `sent`')
+
 
 # Randomize data order to prevent overfitting to subset of
 # data when running on fewer instances

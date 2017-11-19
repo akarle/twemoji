@@ -68,20 +68,20 @@ def load_sent140(data_path, word_limit=float('inf')):
                     labels.append(l[-1])
                     word_count += 1
 
-                except:
+                except UnicodeDecodeError:
                     unicode_err_count += 1
 
         labels = map(int, labels)
         print 'Unicode Error Count: ', unicode_err_count
-        return text, labels
+        return text, labels, word_count
 
     train_file = os.path.join(data_path, 'train.csv')
     test_file = os.path.join(data_path, 'test.csv')
 
-    trdata, trlabels = parse_file(train_file)
-    tedata, telabels = parse_file(test_file)
+    trdata, trlabels, trcount = parse_file(train_file)
+    tedata, telabels, tecount = parse_file(test_file)
 
-    return (trdata, trlabels, tedata, telabels)
+    return (trdata, trlabels, trcount, tedata, telabels, tecount)
 
 
 def load_nrc_emotion_lexicon(
