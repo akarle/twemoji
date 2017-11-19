@@ -5,6 +5,7 @@
 """
 import csv
 import os
+from collections import defaultdict
 
 
 def load_data(data_file_path, label_file_path, num_instances=float('inf')):
@@ -81,3 +82,30 @@ def load_sent140(data_path, word_limit=float('inf')):
     tedata, telabels = parse_file(test_file)
 
     return (trdata, trlabels, tedata, telabels)
+
+
+def load_nrc_emotion_lexicon(
+    data_path='../Data/Lexicons/' +
+        'NRC-Emotion-Lexicon-v0.92/NRC-Emotion-Lexicon-Wordlevel-v0.92.txt'):
+    emolex = {}
+    emolex['anger'] = defaultdict(int)
+    emolex['anticipation'] = defaultdict(int)
+    emolex['disgust'] = defaultdict(int)
+    emolex['fear'] = defaultdict(int)
+    emolex['joy'] = defaultdict(int)
+    emolex['positive'] = defaultdict(int)
+    emolex['negative'] = defaultdict(int)
+    emolex['sadness'] = defaultdict(int)
+    emolex['surprise'] = defaultdict(int)
+    emolex['trust'] = defaultdict(int)
+    with open(data_path, 'rb') as fp:
+        reader = csv.reader(fp, delimiter='\t')
+        data = []
+        for row in reader:
+            data.append(row)
+        for d in data:
+            if len(d) == 3:
+                emolex[str(d[1])][str(d[0])] = int(d[2])
+    # for d in emolex:
+    #     print emolex[d]['phony']
+    return emolex
