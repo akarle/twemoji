@@ -8,7 +8,7 @@ import os
 from collections import defaultdict
 
 
-def load_data(data_file_path, label_file_path, num_instances=float('inf')):
+def load_emoji(data_file_path, label_file_path, num_instances=float('inf')):
     """ A function to load in the semeval data
 
         Example params:
@@ -41,47 +41,44 @@ def load_data(data_file_path, label_file_path, num_instances=float('inf')):
     return (data, labels, count)
 
 
-def load_sent140(data_path, word_limit=float('inf')):
+def load_sent140(data_path, dataset='test', num_instances=float('inf')):
     """ A func to load in the sentiment140 dataset
 
-        data_path leads to a dir with contents test.csv and train.csv
+        data_path leads to a dir with a csv file of data
+        @param `dataset` is the name of the csv file
     """
-    # Helper func (as same thing done to both test and train)
-    def parse_file(file_path):
-        print 'Loading %s' % file_path
-        labels = []
-        text = []
-        with open(file_path, 'r') as f:
-            unicode_err_count = 0
-            word_count = 0
-            reader = csv.reader(f, delimiter=',', quotechar='\"')
-            for l in reader:
-                if word_count >= word_limit:
-                    break
 
-                word = l[0].rstrip()
+    file_path = os.path.join(data_path, dataset + '.csv')
+    print 'Loading %s' % file_path
+    labels = []
+    data = []
+    with open(file_path, 'r') as f:
+        unicode_err_count = 0
+        word_count = 0
+        reader = csv.reader(f, delimiter=',', quotechar='\"')
+        for l in reader:
+            if word_count >= num_instances:
+                break
 
-                # Only extract strings without unicode errors!
-                try:
-                    word.decode('utf-8')  # attempt a decode
-                    text.append(word)  # append if success
-                    labels.append(l[-1])
-                    word_count += 1
+            word = l[0].rstrip()
 
-                except:
-                    unicode_err_count += 1
+            # Only extract strings without unicode errors!
+            try:
+                word.decode('utf-8')  # attempt a decode
+                data.append(word)  # append if success
+                labels.append(l[-1])
+                word_count += 1
 
-        labels = map(int, labels)
-        print 'Unicode Error Count: ', unicode_err_count
-        return text, labels
+            except UnicodeDecodeError:
+                unicode_err_count += 1
 
-    train_file = os.path.join(data_path, 'train.csv')
-    test_file = os.path.join(data_path, 'test.csv')
+    labels = map(int, labels)
+    labels = map(lambda x: x / 2, labels)  # map 2->1, 4->2
+    print 'Unicode Error Count: ', unicode_err_count
 
-    trdata, trlabels = parse_file(train_file)
-    tedata, telabels = parse_file(test_file)
+    file_path = os.path.join(data_path, dataset + '.csv')
 
-    return (trdata, trlabels, tedata, telabels)
+    return (data, labels, word_count)
 
 
 def load_nrc_emotion_lexicon(
