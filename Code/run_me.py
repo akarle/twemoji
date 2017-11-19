@@ -160,6 +160,17 @@ if os.name != 'nt':
         data = [correct_spelling(tweet) for tweet in data]
         verboseprint("Done spell correction")
 
+data_for_sent = data
+
+# POS TAGGING
+if 'pos-tags' in pre:
+    verboseprint("Adding POS tags to tweets...")
+    data = pos_tag([u"".join([c for c in unicodedata.normalize(
+        'NFKD', unicode(d, 'utf8'))
+        if not unicodedata.combining(c)]) for d in data])
+    verboseprint("Finished adding POS tags")
+    verboseprint("*******")
+
 # WORD REPLACEMENT USING CLUSTERS
 if 'word-clustering' in pre:
     verboseprint("Word replacement using clusters....")
@@ -184,20 +195,15 @@ if 'word-clustering' in pre:
                         escaped += ("\\"+c)
                     else:
                         escaped += c
-                line = re.sub(r"\b%s\b" % escaped, clusterdict[x], line)
+                if 'pos-tags' in pre:
+                    line = re.sub(r"(?<=POS_._)(\W\B|[\W]*[\w]+\b)"
+                                  % escaped, clusterdict[x], line)
+                else:
+                    line = re.sub(r"\b%s\b" % escaped, clusterdict[x], line)
         data_temp.append(line)
     data = data_temp
     clusterdict.clear()
     clusters.close()
-
-# POS TAGGING
-if 'pos-tags' in pre:
-    verboseprint("Adding POS tags to tweets...")
-    data = pos_tag([u"".join([c for c in unicodedata.normalize(
-        'NFKD', unicode(d, 'utf8'))
-        if not unicodedata.combining(c)]) for d in data])
-    verboseprint("Finished adding POS tags")
-    verboseprint("*******")
 
 # ##############################################
 #               EXTRACT FEATURES
@@ -215,7 +221,7 @@ if 'sent-class' in ftyps:
     verboseprint("The best sent_clf stored is: %s with feats %s"
                  % (clf_name, perm))
 
-    clf_feats = predict_sent(data, clf, clf_name, pickleables, perm)
+    clf_feats = predict_sent(data_for_sent, clf, clf_name, pickleables, perm)
     verboseprint("Sentiment prediction features complete")
     verboseprint("*******")
 
