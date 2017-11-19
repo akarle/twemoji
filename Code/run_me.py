@@ -123,7 +123,7 @@ if not os.path.isdir(data_path):
     raise Exception('Your specified data directory ' +
                     data_path + ' does not exist.')
 
-if args.pipeline == 'emoji':
+if args.pipeline[0] == 'emoji':
     label_path = None
     text_path = None
     for f in os.listdir(data_path):
@@ -143,7 +143,7 @@ if args.pipeline == 'emoji':
         data, labels, dcount = load_data(text_path, label_path)
 
 elif args.pipeline[0] == 'sent':
-    _, _, _, data, labels, dcount = \
+    data, labels, dcount, _, _, _ = \
         load_sent140(data_path, args.num_instances[0])
     # TODO: add invalid arg handling!
 
@@ -270,6 +270,9 @@ if 'svm' in cl:
 # That is, classifer mapped to a list of tuples of (feat_combo, score)
 scores = {}
 
+# The best so far (to be stored if training sent clf)
+best = {'clf': None, 'perm': None, 'score': 0}
+
 # Train Classifiers on Extracted Features
 # Use FeatureCombinator to loop through all combos
 feat_perm = combinator.next_perm()
@@ -311,6 +314,13 @@ while feat_perm is not None:
                      % (score,))
         verboseprint("*******")
 
+        # Add best clf to list of clfs for pickle
+        if score > best['score']:
+            print "Found new best!"
+            best['score'] = score
+            best['clf'] = c
+            best['perm'] = feat_perm
+
     # Go to next feature permutation
     feat_perm = combinator.next_perm()
 
@@ -344,11 +354,11 @@ for c in scores:
 for c in scores:
     output_file = '../Figures/' + c + \
                   '_out_' + time.strftime("%Y%m%d-%H%M%S") + '.png'
-    labels = []
+    graph_labels = []
     values = []
     cms = []
     for label, value, cm in scores[c]:
-        labels.append(label)
+        graph_labels.append(label)
         values.append(value)
         cms.append(cm)
 
@@ -357,16 +367,41 @@ for c in scores:
         desc,
         baseline_score,
         values,
-        labels,
+        graph_labels,
         output_file
     )
 
     # Find best confusion matrix
     maxind = np.argmax(values)
     max_cm = cms[maxind]
-    max_label = labels[maxind]
+    max_label = graph_labels[maxind]
 
     conf_file = '../Figures/' + c + 'CONF_MTX_' +\
                 time.strftime("%Y%m%d-%H%M%S") + '.png'
 
     plot_confusion_matrix(max_cm, c, max_label, conf_file)
+
+# ##############################################
+#            SAVE TOP CLFS (SENT ONLY)
+# ##############################################
+
+# Pull best from evaluation from curr_best
+verboseprint("Best overall: %s with %s giving score %f" %
+             (best['clf'], best['perm'][0], best['score']))
+
+# Retrain the model with the data
+clfs[best['clf']].fit(best['perm'][1], labels)
+
+# Store the Classifiers in Pickle
+# Pickle the following:
+#     1. The trained classifier
+#     2. The FE used (with its CV's and all) for re-extraction on pred data
+#     3. The feat_perm list of feats for re-extraction on prediction data
+clf_name = best['clf']
+to_pikle = (clfs[clf_name],
+            clf_name,
+            extractor.get_pickleables(),
+            best['perm'][0])
+
+with open('sent.pkl', 'w') as f:
+    pickle.dump(to_pikle, f)
