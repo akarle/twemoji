@@ -391,23 +391,25 @@ for c in scores:
 #            SAVE TOP CLFS (SENT ONLY)
 # ##############################################
 
-# Pull best from evaluation from curr_best
-verboseprint("Best overall: %s with %s giving score %f" %
-             (best['clf'], best['perm'][0], best['score']))
+if args.pipeline[0] == 'sent':
+    verboseprint("Saving the top clf to pickle dump")
+    # Pull best from evaluation from curr_best
+    verboseprint("Best overall: %s with %s giving score %f" %
+                 (best['clf'], best['perm'][0], best['score']))
 
-# Retrain the model with the data
-clfs[best['clf']].fit(best['perm'][1], labels)
+    # Retrain the model with the data
+    clfs[best['clf']].fit(best['perm'][1], labels)
 
-# Store the Classifiers in Pickle
-# Pickle the following:
-#     1. The trained classifier
-#     2. The FE used (with its CV's and all) for re-extraction on pred data
-#     3. The feat_perm list of feats for re-extraction on prediction data
-clf_name = best['clf']
-to_pikle = (clfs[clf_name],
-            clf_name,
-            extractor.get_pickleables(),
-            best['perm'][0])
+    # Store the Classifiers in Pickle
+    # Pickle the following:
+    #     1. The trained classifier
+    #     2. The FE used (with its CV's and all) for re-extraction on pred data
+    #     3. The feat_perm list of feats for re-extraction on prediction data
+    clf_name = best['clf']
+    to_pikle = (clfs[clf_name],
+                clf_name,
+                extractor.get_pickleables(),
+                best['perm'][0])
 
-with open('sent.pkl', 'w') as f:
-    pickle.dump(to_pikle, f)
+    with open('sent.pkl', 'w') as f:
+        pickle.dump(to_pikle, f)
