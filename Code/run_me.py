@@ -84,6 +84,11 @@ parser.add_argument('-l', '--loadout',
                     metavar='loadout',
                     dest='loadout')
 
+parser.add_argument('-nf', '--nofigures',
+                    action='store_true',
+                    help='a flag that when added prevents saving of figures',
+                    dest='nofigs')
+
 args = parser.parse_args()
 
 if args.verbose >= 1:
@@ -138,17 +143,16 @@ if args.pipeline[0] == 'emoji':
 
     if args.num_instances:
         data, labels, dcount = load_emoji(text_path,
-                                         label_path, args.num_instances[0])
+                                          label_path, args.num_instances[0])
     else:
         data, labels, dcount = load_emoji(text_path, label_path)
 
 elif args.pipeline[0] == 'sent':
     if args.num_instances:
-        data, labels, dcount, _, _, _ = \
-            load_sent140(data_path, args.num_instances[0])
+        data, labels, dcount = \
+            load_sent140(data_path, num_instances=args.num_instances[0])
     else:
-        data, labels, dcount, _, _, _ = \
-            load_sent140(data_path, float('inf'))
+        data, labels, dcount = load_sent140(data_path)
 else:
     raise Exception('Invalid pipeline choice: choose either `emoji` or `sent`')
 
@@ -315,7 +319,8 @@ while feat_perm is not None:
         if c not in scores:
             scores[c] = []
 
-        cm = confusion_matrix(y_test, preds, labels=np.arange(10))
+        cm = confusion_matrix(y_test, preds,
+                              labels=np.arange(np.max(labels) + 1))
         scores[c].append((str(feat_perm[0]), score, cm))
 
         verboseprint("Average accuracy score: %f"
@@ -376,7 +381,8 @@ for c in scores:
         baseline_score,
         values,
         graph_labels,
-        output_file
+        output_file,
+        args.nofigs
     )
 
     # Find best confusion matrix
@@ -387,7 +393,8 @@ for c in scores:
     conf_file = '../Figures/' + c + 'CONF_MTX_' +\
                 time.strftime("%Y%m%d-%H%M%S") + '.png'
 
-    plot_confusion_matrix(max_cm, c, max_label, conf_file)
+    plot_confusion_matrix(max_cm, c, max_label, conf_file,
+                          args.pipeline[0], args.nofigs)
 
 # ##############################################
 #            SAVE TOP CLFS (SENT ONLY)
