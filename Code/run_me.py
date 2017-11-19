@@ -314,7 +314,8 @@ while feat_perm is not None:
         if c not in scores:
             scores[c] = []
 
-        cm = confusion_matrix(y_test, preds, labels=np.arange(10))
+        cm = confusion_matrix(y_test, preds,
+                              labels=np.arange(np.max(labels) + 1))
         scores[c].append((str(feat_perm[0]), score, cm))
 
         verboseprint("Average accuracy score: %f"
@@ -386,7 +387,7 @@ for c in scores:
     conf_file = '../Figures/' + c + 'CONF_MTX_' +\
                 time.strftime("%Y%m%d-%H%M%S") + '.png'
 
-    plot_confusion_matrix(max_cm, c, max_label, conf_file)
+    plot_confusion_matrix(max_cm, c, max_label, conf_file, args.pipeline[0])
 
 # ##############################################
 #            SAVE TOP CLFS (SENT ONLY)
