@@ -1,6 +1,6 @@
 # Imports
 from plotting import acc_bar_chart, plot_confusion_matrix
-from load_data import load_data, load_sent140
+from load_data import load_emoji, load_sent140
 from text_feat_extractor import TextFeatureExtractor
 from feature_combinator import FeatureCombinator
 import os
@@ -137,10 +137,10 @@ if args.pipeline[0] == 'emoji':
         raise Exception('Could not find a text file.')
 
     if args.num_instances:
-        data, labels, dcount = load_data(text_path,
+        data, labels, dcount = load_emoji(text_path,
                                          label_path, args.num_instances[0])
     else:
-        data, labels, dcount = load_data(text_path, label_path)
+        data, labels, dcount = load_emoji(text_path, label_path)
 
 elif args.pipeline[0] == 'sent':
     data, labels, dcount, _, _, _ = \

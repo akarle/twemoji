@@ -8,7 +8,7 @@ import os
 from collections import defaultdict
 
 
-def load_data(data_file_path, label_file_path, num_instances=float('inf')):
+def load_emoji(data_file_path, label_file_path, num_instances=float('inf')):
     """ A function to load in the semeval data
 
         Example params:
