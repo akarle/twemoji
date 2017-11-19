@@ -41,9 +41,9 @@ feats_to_extract = ['unigram', 'bigram']
 data_path = os.path.join('..', 'Data', 'sent140')
 
 if args.num_instances:
-    X_train, y_train, _, _ = load_sent140(data_path, args.num_instances[0])
+    X_train, y_train, _, _, _, _ = load_sent140(data_path, args.num_instances[0])
 else:
-    X_train, y_train, _, _ = load_sent140(data_path)
+    X_train, y_train, _, _, _, _ = load_sent140(data_path)
 
 print (len(X_train), len(y_train))
 for i in range(10):
