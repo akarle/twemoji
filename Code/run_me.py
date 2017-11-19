@@ -143,10 +143,12 @@ if args.pipeline[0] == 'emoji':
         data, labels, dcount = load_emoji(text_path, label_path)
 
 elif args.pipeline[0] == 'sent':
-    data, labels, dcount, _, _, _ = \
-        load_sent140(data_path, args.num_instances[0])
-    # TODO: add invalid arg handling!
-
+    if args.num_instances:
+        data, labels, dcount, _, _, _ = \
+            load_sent140(data_path, args.num_instances[0])
+    else:
+        data, labels, dcount, _, _, _ = \
+            load_sent140(data_path, float('inf'))
 else:
     raise Exception('Invalid pipeline choice: choose either `emoji` or `sent`')
 
