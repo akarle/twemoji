@@ -4,7 +4,7 @@ import itertools
 import numpy as np
 
 
-def acc_bar_chart(title, desc, baseline, acc_scores, labels, output_file):
+def acc_bar_chart(title, desc, baseline, acc_scores, labels, output_file, nofigs):
     """ Graph the given accuracies against each other and baseline """
 
     # Graph the scores
@@ -21,11 +21,14 @@ def acc_bar_chart(title, desc, baseline, acc_scores, labels, output_file):
     desc_str = "Preprocessing: " + ', '.join(descls)
     plt.subplots_adjust(bottom=.4)
     plt.text(.05, -.14, desc_str, fontsize=9, wrap=True)
-    plt.savefig(output_file)
+
+    if not nofigs:
+        plt.savefig(output_file)
+
     plt.clf()
 
 
-def plot_confusion_matrix(cnf_mat, clf_name, feats_str, out_file, pipeline):
+def plot_confusion_matrix(cnf_mat, clf_name, feats_str, out_file, pipeline, nofigs):
     """ Creates and plots a confusion matrix for the predictions
 
         CITATION: THIS CODE HEAVILY ADAPTED FROM SCIKITLEARN:
@@ -44,7 +47,6 @@ def plot_confusion_matrix(cnf_mat, clf_name, feats_str, out_file, pipeline):
     # Map the preds and gold to the emojis (for display)
     # TODO
     num_classes = cnf_mat.shape[0]
-    print cnf_mat
 
     if pipeline == 'emoji':
         title = "Emoji"
@@ -77,5 +79,7 @@ def plot_confusion_matrix(cnf_mat, clf_name, feats_str, out_file, pipeline):
     plt.ylabel('Gold Label')
     plt.xlabel('Predicted Label')
 
-    plt.savefig(out_file)
+    if not nofigs:
+        plt.savefig(out_file)
+
     plt.clf()
