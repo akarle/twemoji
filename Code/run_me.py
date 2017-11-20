@@ -157,7 +157,7 @@ verboseprint("*******")
 if os.name != 'nt':
     if 'spell-correction' in pre:
         verboseprint("Spell correcting tweets....")
-        data = [correct_spelling(tweet) for tweet in data]
+        data = correct_spelling(data)
         verboseprint("Done spell correction")
 
 data_for_sent = data
