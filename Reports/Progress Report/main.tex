@@ -1,0 +1,335 @@
+\documentclass[10pt]{article}
+
+\usepackage[margin=1.0in]{geometry}
+\usepackage[utf8]{inputenc} % allow utf-8 input
+\usepackage[T1]{fontenc}    % use 8-bit T1 fonts
+\usepackage{hyperref}       % hyperlinks
+\usepackage{url}            % simple URL typesetting
+\usepackage{booktabs}       % professional-quality tables
+\usepackage{amsfonts}       % blackboard math symbols
+\usepackage{nicefrac}       % compact symbols for 1/2, etc.
+\usepackage{microtype}      % microtypography
+\usepackage{graphicx}
+\usepackage{parskip} 		% for no auto indent
+\usepackage{amsmath, amssymb}
+\usepackage{todonotes}
+
+\usepackage{caption}        % subfigure stuff
+\usepackage{subcaption}
+
+%CITATION EX: \cite{lara2013survey}
+
+
+\title{\textbf{Predicting Emojis From Tweet Text Through Sentiment Analysis: Progress Report} \\
+\large CS 585 NLP, UMass Amherst, Fall 2017}
+
+\author{
+  Alexander Karle, Makenzie Schwartz, William Warner \\
+  \texttt{akarle@umass.edu}, \texttt{mwschwartz@umass.edu}, \texttt{wwarner@umass.edu} }
+
+\date{November 2017}
+
+\begin{document}
+
+\maketitle
+
+% Introduction:
+% Restate the problem and our intuition about sentiment being a useful feature in emoji classification. Briefly summarize our progress thus far and the main issues we've encountered. Briefly describe our next steps and what we hope to accomplish.
+\section{Introduction}
+Since their inclusion in an international keyboard on the iPhone in 2011, emojis (ideograms that represent various emotions, ideas, and concepts) have gained widespread usage in digital forms of communication \cite{blagdon2013}. Recognizing the importance of emojis as a means to add expressiveness to otherwise plain textual communication, the organizers of SemEval-2018 have elected to present emoji prediction given textual data as Task 2 of this year's series of evaluations. Specifically, the organizers have collected a data set of tweets (500k in English, 100k in Spanish) that originally included one emoji, stripped the emojis from the original tweets and now use them as labels for the data. The task they pose is thus to develop a classification system that can accurately predict which emoji corresponds to any given tweet.
+
+Our original goal for this progress report was to establish some baseline results that we could use to compare our later attempts to. We quickly accomplished this goal by first producing an extremely naïve baseline by guessing just the most common emoji (red heart, U+2764) every time, which had an accuracy of 21.8\%. We then ran a simple Multinomial Naïve Bayes classifier with unigram features on the data set and achieved accuracy results around 29\%.
+
+From there, we have followed our original intuition that there exists some relation between the affect of the original tweets and the emoji associated with them—for simplicity, we decided to explore sentiment analysis of the tweets as a feature for our overall classification system. As described below, most of our efforts since developing a baseline have thus far been to develop either (1) a useful sentiment classifier or (2) relevant sentiment-related features to use directly in our emoji classifier in order to improve our the results of said classifier. We have explored various preprocessing steps including word clustering and POS tagging, have worked on training a sentiment classifier on a separate data set, and are working on using sentiment lexicons as features.
+
+Despite these efforts, our best classifiers perform with an accuracy of about 35\%. We attribute this to the difficulty of the problem: with 20 possible emojis for each tweet, and emojis being ambiguous in their meaning \cite{miller2016blissfully} as well as mostly positive in sentiment \cite{novak2015sentiment}, it is difficult to accurately find trends in emoji usage. Furthermore, the distinctions between some emojis are rather arbitrary—what distinguishes the use of a red heart (U+2764) versus the use of a purple heart (U+1F49C), for example? Or from two pink hearts (U+1F495)? All three are possible labels for the English data set, presenting ambiguity that might not be distinguishable from text or sentiment features alone.
+
+Due to these difficulties, we have decided to scale back the original scope of our goals. We are no longer going to work on multilingual classifiers but focus specifically on the English portion of the data. Our final push will be to refine our sentiment classifiers and try to incorporate neural networks.
+
+
+% Data Description:
+% For each data set, report:
+% It's source (cite relevant paper) and how we acquired it
+% Basic stats (size, number of words/sentences/documents etc.)
+% Any other important properties/info
+\section{Data Description}
+\subsection{SemEval Twitter Dataset}
+\begin{figure}
+\centering
+\begin{subfigure}{.5\textwidth}
+  \centering
+  \includegraphics[width=0.95\linewidth]{emoji_chart.png}
+  \caption{Emoji Classes for English and Spanish datasets}
+  \label{fig:emojis}
+\end{subfigure}%
+\begin{subfigure}{.5\textwidth}
+  \centering
+  \includegraphics[width=0.95\linewidth]{distribution.png}
+  \caption{Distribution of labels for English dataset}
+  \label{fig:distribution}
+\end{subfigure}
+\caption{SemEval Train Set Stats}
+\label{fig:semevaltrain}
+\end{figure}
+\subsubsection{Train Set}
+Our training dataset contains 491,526 English tweets containing a single emoji out of a set of the twenty most popular emojis in the US and around 100,000 Spanish tweets containing one of the twenty most popular emojis in Spain. The emojis, shown in order of their popularity, are shown in Figure \ref{fig:emojis}.
+
+This data was collected by crawling twitter using a SemEval-2018 provided seed and twitter crawler. The crawler initially saved the tweets as JSON data, and we processed this JSON data into our dataset using a SemEval provided script. The script stripped the emojis from the tweets and saved the tweet contents to text and label files. The label file contains a number from 0-19 on each line to represent the emoji associated with each tweet, and the text file contains the entire contents of each tweet including hashtags, location tags, and @user tags. The distribution of the emoji labels for the English dataset is shown in Figure \ref{fig:distribution}.
+
+\subsubsection{Trial Set}
+Our trial dataset was provided as a download on the SemEval-2018 challenge page. It has an identical structure to the training dataset but a different set of only 50,000 English tweets and labels and 10,000 Spanish tweets and labels.
+
+\subsection{Sentiment140 Dataset}
+The dataset we are currently using to train our sentiment classifiers is the Sentiment140 dataset, created by Go et al. \cite{go2009twitter}. Although the full dataset is not publicly available, the train and test set for English is available.
+
+The train set consists of 1.6 million tweets scraped from Twitter and labeled using "distant supervision". In short, the authors pulled tweets with positive emoticons (such as :) and :-) ) and labeled those as positive and then labeled negative tweets similarly with negative emoticons. More on their collection technique can be found in \cite{go2009twitter}.
+
+The test set consists of 498 hand labeled tweets, labeled either as positive, negative, or neutral.
+
+One of the problems we have run into with this particular dataset is that the large train set does not contain the neutral category. We suspect this to be due to distant supervision not lending its technique well to neutral tweets (what would a neutral emoticon be? the lack of an emoticon certainly would not indicate lack of sentiment). We wish to have at least 3 categories of sentiment for our sentiment classifier, as more categories provide more information to be used for emoji prediction; however, 498 tweets seems to be too small to train a classifier that may be good at generalizing.
+
+For these reasons, we may investigate finding a different dataset that is more available (open-source) and that has a better class distribution.
+
+Note that, as the test set contains labels that the train set does not, we will not use it as a real test set, but instead as a smaller train set for a 3 class problem.
+
+\subsection{SentiWordNet}
+Our initial attempts to utilize sentiment lexicons made use of SentiWordNet \cite{baccianella2010sentiwordnet}. SentiWordNet assigns positive, negative, and objectivity (objectivity = 1 - [positive + negative]) sentiment scores to each of the synsets in the WordNet \cite{Miller:1995:WLD:219717.219748} corpus. A synset is defined as a group of synonyms expressing a unique concept. The WordNet 3.0 corpus contains 117,659 synsets (82,115 nouns, 13,767 verbs, 18,156 adjectives and 3,621 adverbs). We make use the Natural Language Toolkit (NLTK) platform to load in and access the SentiWordNet scores.
+
+\subsection{NRC Emotion and Sentiment Lexicons}
+We were able to acquire access to seven different sentiment lexicons created by the National Research Council Canada (NRC) by emailing Dr. Saif M. Mohammad, Senior Research Officer at the NRC and one of the main creators of the lexicons. So far, we've only made use of the NRC Word-Emotion Association Lexicon (aka EmoLex) which gives binary associations of 14,182 words for eight emotions (anger, anticipation, disgust, fear, joy, sadness, surprise, trust) and two sentiments (negative and positive) manually annotated on Amazon's Mechanical Turk \cite{Mohammad13}. We may later decide to make use of some of the other lexicons, more information on which can be found at  \url{http://saifmohammad.com/WebPages/lexicons.html}.
+
+% Preliminary Attempts:
+% Main section of the report, most of the description of our progress goes here.
+\section{Preliminary Attempts}
+\begin{figure}
+\centering
+\begin{subfigure}{.5\textwidth}
+  \centering
+  \includegraphics[width=.95\linewidth]{top5.png}
+  \caption{Accuracy scores for best five classifiers}
+  \label{fig:topfive}
+\end{subfigure}%
+\begin{subfigure}{.5\textwidth}
+  \centering
+  \includegraphics[trim={0 3cm 0 0},clip, width=.95\linewidth]{classA.png}
+  \caption{Accuracy scores for different combinations of features for classifier A}
+  \label{fig:classifierA}
+\end{subfigure}
+\caption{Accuracy scores across different classifiers}
+\label{fig:overivew}
+\end{figure}
+
+% Overview:
+% In brief but technical detail, summarize the steps we've taken and our best results. Probably best to put a summary table with accuracy scores for best sentiment and emoji classifiers here.
+\subsection{Overview and Summary of Results}
+Our first efforts were to establish baseline accuracy scores to which we could compare our classifiers. Around 21.8\% of the train data is labeled with the the most frequent emoji, the red heart (U+2764), and so we set that as our most naïve baseline. Then we ran a simple Multinomial Naïve Bayes classifier with unigram features and got an accuracy of 29.36\%. Thus, with little effort, we were able to surpass our baseline by about 8\% accuracy. We then trained a Logistic Regression model on the data with unigram features, and achieved an accuracy of 34.08\%. The LogReg model has consistently outperformed the MNB model throughout all of our experiments.
+
+Most of our efforts have been spent on (a) training a sentiment classifier in order to add sentiment features to our emoji classifier and (b) performing various preprocessing steps to improve accuracy. In Figure \ref{fig:topfive} we report the accuracy scores for the best five classifiers we were able to train. Note all classifiers were trained and evaluated on a 80/20 train/test split of the SemEval train data. All five of these classifiers were trained on the Logistic Regression model. For information on what features and preprocessing steps were used for each classifier, see Table 1.
+\begin{center}
+\begin{tabular}{ |p{1.5cm}||p{3cm}|p{5.5cm}|p{1.5cm}|  }
+ \hline
+ \multicolumn{4}{|c|}{Table 1: Top 5 Emoji Classifiers by Accuracy} \\
+ \hline
+ Classifier & Features & Preprocessing & Accuracy\\
+ \hline
+ A & uni, bi, sent & lc, sa, sl, sc&   35.28\%\\
+ B & uni, bi  & lc, sa, sl, wc, pos, s@, sdm, su, cs & 35.09\%\\
+ C & uni, bi, sent & lc, sa, sl, wc, sc, pos, s@, sdm, su &  34.90\%\\
+ D & uni, bi & sl &  34.88\%\\
+ E & uni, bi, sent & lc, sa, sl, pos, s@, sdm, su & 34.80\%\\
+ Baseline & -- & -- & 21.8\%\\
+ \hline
+ \multicolumn{4}{|c|}{Key: Features: uni = unigram, bi = bigram, sent = sentiment} \\
+ \multicolumn{4}{|c|}{Preprocessing: lc = lowercase, sa = strip accents, sl = strip location, sc = spell correction,} \\
+ \multicolumn{4}{|c|}{wc = word clustering, pos = POS tags, s@ = strip @ mentions, sdm = strip discourse markers,}\\
+ \multicolumn{4}{|c|}{su = strip URLs, cs = count single characters as tokens}\\
+ \hline
+\end{tabular}
+\end{center}
+
+Figure \ref{fig:classifierA} shows the varying accuracy scores for training classifier A with different combinations of features (note here that the 'lr' feature refers to sentiment score). Unigram features consistently outperformed bigram features, which were probably too scarce to produce meaningful features. However, the unigram + bigram combination consistently proved to outperform both alone.
+
+In regards to the sentiment feature, all five of the above classifiers used a sentiment classifier (a Logistic Regression model with unigram and bigram features which was trained and evaluated on the Sentiment140 train data using a test/train split, achieving an accuracy of 81.99\%) to classify the tweets in the SemEval train set. The sentiment scores from this classifier were then used as features. Overall, the sentiment score did not seem to affect accuracy significantly. When used as the only feature, the models would usually resort to performing equal to the baseline score. When used in conjunction with other features, it usually affected the accuracy score by +/-0.1\%.
+
+It is worth noting that the single most effective preprocessing step we found at improving accuracy was stripping location data; for this reason, we created a separate data set which is the same as the original train set with location information removed. Thus, stripping location data is not reported as a preprocessing step in Figure \ref{fig:classifierA}, as it used the data set with location data already removed.
+
+% \begin{figure}
+%     \centering
+%     \includegraphics[scale=0.6]{classAconfmatr.png}
+%     \caption{Classifer A Confusion Matrix}
+%     \label{fig:clfamatr}
+% \end{figure}
+
+The relative ineffectiveness of the sentiment feature to improve classification accuracy challenges our hypothesis that emoji usage is directly linked to sentiment. There are two possible explanations for this ineffectiveness: either (1) our sentiment classifier isn't accurate on the SemEval data, or (2) the sentiment feature does not contain enough information to be meaningful. Since the Sentiment140 data that the sentiment classifier was trained on are also tweets, it seems that (1) is unlikely. Rather, based on the findings that most of the frequently used emojis have positive sentiment\cite{novak2015sentiment}, it seems that our sentiment feature does not contain enough of a gradient to be useful in our classification problem. Two possible solutions would be to (1) have the sentiment classifier choose between more than just a binary positive/negative sentiment class or (2) develop new affect related features, such as emotion features, to further distinguish between emoji usage. See below for more on these possible improvements.
+
+% Pipeline Overview:
+% Description of our system with diagram and explanation of steps. Mostly explain what send_it and run_me do, what FE and FC are, etc. Technical explanation of our work.
+\subsection{Pipeline Description}
+\begin{figure}
+    \centering
+    \includegraphics[scale=0.4]{pipeline.png}
+    \caption{Pipeline overview}
+    \label{fig:pipeline}
+\end{figure}
+Before diving into the specifics of our attempts, we first present an overview of the pipeline we have created (see Figure \ref{fig:pipeline}). The main work is done in two Python scripts: the sentiment classifier training and selection in send\_it.py, and the emoji classifier training and results output in run\_me.py. As arguments, run\_me.py requires the directory of a data set and the name of a JSON file which specifies what classifiers to use, what preprocessing steps to complete, and which features to extract. Both send\_it.py and run\_me.py also take an optional argument to specify how many instances of the data set to use (allowing us to rapidly test new developments on, say, 1000 tweets instead of the full set).
+
+In order to effectively extract text features and combine them with our own features, like sentiment scores, we make use of two more classes: text\_feature\_extractor.py (FE) and feature\_combinator.py (FC). To extract text features from a data set, we pass a list of the desired features (for example, ['unigram', 'bigram']) to FE, which makes use of scikit-learn's CountVectorizer to extract these features. FC takes in a list of text features and a list of sentiment classifier scores and can be used to permutate %this is spelled correctly
+over combinations of the various features in order to compare the results of using different subsets of features.
+
+Both send\_it.py and run\_me.py make use of FE and FC. First, send\_it.py loads in the Sentiment140 data and uses FE to extract features, which it passes to FC. It then uses FC to iterate over the various combinations of features and trains various classifiers using those features. It keeps track of the classifier/feature subset that performs with the highest accuracy and, after all possible combinations have been tried, saves the best classifier/feature subset to a file for use later.
+
+Then, run\_me.py loads in the SemEval emoji data and performs any preprocessing on the data. After, it uses FE to extract text features. It also loads in the sentiment classifier that was saved to file and runs that on the data and saves the output as a feature matrix. It then passes the text features and the sentiment feature to FC and trains different classifiers on the various combinations of features and prints out the results.
+
+% Preprocessing:
+% In depth look at the various preprocessing steps we've tried/taken. Basic how we did it, why we did it, etc. and cite relevant techology and papers. We can report results of how the preprocessing affected performance of classifiers in later sections.
+\subsection{Preprocessing}
+Note that as of the time of writing, these preprocessing steps are only performed on the SemEval data before emoji classification. No preprocessing currently occurs on the Sentiment140 data for sentiment classifier training.
+
+\subsubsection{Removal of Location Data}
+Many of the tweets contain a location tag which is always located at the end of the tweet when it exists. The words in the location tag provide very little context for the tweet itself.  For example, in this following tweet, the location provides no useful information:
+\begin{center}
+Juice and be glad! ++ zozazindan @ Nashville, Tennessee 
+\end{center}
+In addition, many tweets contained only a location tag and no other content. We hypothesized that the location provided no useful information to the classifier and had the affect of diluting important information. To remove the locations, we ran a script to remove the tag from each tweet or remove the tweet if the only contents were the location. We ended up not including this as a preprocessing option and instead directly modified our dataset because we feel confident that the data is more useful this way.  This was confirmed in testing where the accuracy with location removed was slightly better in both Logistic Regression and Naive Bayes. The LR accuracy with both unigrams and bigrams as features went from 34.57\% to 34.88\%. The LR unigram score saw the most improvement from 34.08\% to 34.55\%.
+
+
+\subsubsection{Part of Speech Tagging}
+In an attempt to disambiguate further than simple n-gram features will allow, and because retrieving sentiment values for words from SentiWordNet required the word's part of speech, we decided to include an optional part of speech tagging preprocessing step. For the tagging itself, we make use of the Twitter part of speech tagger developed by the Noah's ARK group while at CMU \cite{owoputi2013improved}. The output of the POS tagger is then combined with the original unigrams themselves to produce tokens in the format of:
+\begin{center}
+POS\_N\_word
+\end{center}
+where each token begins with POS, followed by an underscore, then the POS tag, a second underscore, and finally the original word itself. Naturally, when using the POS tagger, we also employ the tokenizer developed along with it—which contrasts from when we don't do POS tagging, where we make use of scikit-learn's CountVectorizer tokenization with some of our own customization instead. POS tagging also allows us to do a few othe preprocessing steps like stripping @ mentions, discourse markers and URLs. Using POS tagging alone did not improve classifier accuracy signifcantly.
+
+\subsubsection{Word Clustering}
+The language used in tweets can be varied and make use of a significant amount of internet slang and abbreviation. This means that there are many different words that can be used to achieve the same meaning. To try to standardize words, we used the Arktweet Twitter Word Clusters dataset which maps over 200,000 words to 1000 clusters to perform word replacement. When a word in a tweet matches one in the cluster dataset, we replace the world with a cluster id. This preprocessing method replaces a large portion of the words in our twitter datasets. For reasons we are unsure of, this word replacement on its own results in a decline in accuracy with both LR and NB classifiers. It may smooth over subtleties that are important to classification of emojis.
+
+\subsubsection{Spell Correction}
+Due to the fact that often people are more lax about spelling things correctly when tweeting (or communicating via digital platforms in general), we thought it might be wise to do some basic spell correction on the tweets before classification. Using a simple system that makes use of the free Enchant spell checking library by AbiWord (and the pyenchant packages that exposes it in Python), we added an optional preprocessing step that checks each word of a tweet and replaces each word Enchant doesn't recognize with Enchant's top suggestion (the suggestion with the smallest edit distance from the original).
+
+However, there are several potential problems with this. First, in cases where there are multiple suggestions with the same edit distance, there is no way to disambiguate between them and the result of the spell correction can actually introduce more ambiguity than previously existed. Also, the use of alternate spellings is a widely accepted phenomenon in digital communication and so the spell checking might distort intentional misspellings that might be useful to preserve into something else.
+
+Despite these potential issues, however, our best accuracy from any classifier (35.28\%) was achieved with just the lowercase, strip accents, strip location, and spell correction preprocessing steps. However, using spell correction in conjunction with other preprocessing steps, like word clustering or POS tagging, seemed to result in a decline of accuracy.
+
+\subsubsection{Other Preprocessing Steps}
+Other optional preprocessing steps include:
+\begin{enumerate}
+\item Lowercase: converts all text to lowercase before tokenization
+\item Stop Word Removal: removes common words after tokenization
+\item Strip Accents: converts unicode characters with accent marks to an equivalent without the accent mark
+\item Count single character tokens: by default, CountVectorizer doesn't count tokens with length less than two; this overrides that behavior and counts single character words as tokens
+\item Strip @ Mentions: removes @user mentions from the tweets
+\item Strip Punctuation: removes punctuation after tokenization
+\item Strip Hashtags: removes \#hashtags from the tweets
+\item Strip discourse markers: removes discourse markers like RT from the tweets
+\item Strip URLs: removes URLs from the tweets
+\end{enumerate}
+
+% Sentiment Classifier Training
+% Mostly Alex's work on send_it goes here. Good to get some charts here. In addition, I'll talk about the sentiment lexicon work I did in the second subsubsection.
+\subsection{Sentiment Classifier Training}
+\subsubsection{Classification with n-gram features}
+The training of sentiment classifiers in send\_it.py is motivated by our fundamental hypothesis (and research question) of whether or not a sentiment classification score would improve the emoji classification task. Our intuition is that valid sentiment data should correlate with emoji usage, as we believe emojis incorporate sentiment information. In order to get these sentiment predictions, we must first train a sentiment classifier.
+
+Currently, the only features we are using for training our sentiment classifiers are different combinations of unigrams and bigrams. Initial results have been promising enough to convince us we should be able to train a rather accurate sentiment classification model.
+
+As discussed in the Section 2, we are debating which set from Sentiment140 to use. Our options are to either (1) use the test set as a 3 class train set, which only contains 498 instances, but is hand labeled and also contains the neutral class, or (2) use the full train set, which is 1.6 million tweets, but only contains positive/negative labels.
+
+\begin{figure}
+\centering
+\begin{subfigure}{.5\textwidth}
+  \centering
+  \includegraphics[trim={0 2cm 0 0},clip,width=.95\linewidth]{LRSentTest.png}
+  \caption{LogReg Accuracy Scores for Test Set}
+  \label{fig:LRSentTest}
+\end{subfigure}%
+\begin{subfigure}{.5\textwidth}
+  \centering
+  \includegraphics[trim={0 5cm 0 0},clip, width=.95\linewidth]{LRSentTestConf.png}
+  \caption{LogReg Confusion Matrix for Test Set}
+  \label{fig:LRSentTestConf}
+\end{subfigure}
+\begin{subfigure}{.5\textwidth}
+  \centering
+  \includegraphics[trim={0 2cm 0 0},clip, width=.95\linewidth]{LRSentTrain.png}
+  \caption{LogReg Accuracy Scores for Train Set}
+  \label{fig:LRSentTrain}
+\end{subfigure}%
+\begin{subfigure}{.5\textwidth}
+  \centering
+  \includegraphics[trim={0 5cm 0 0},clip, width=.95\linewidth]{LRSentTrainConf.png}
+  \caption{LogReg Confusion Matrix for Train Set}
+  \label{fig:LRSentTrainConf}
+\end{subfigure}
+\caption{Accuracies for train and test sets of Sentiment140 data}
+\label{fig:sentdata}
+\end{figure}
+
+In \ref{fig:sentdata} we present the accuracy scores for our sentiment classifiers trained using a Logistic Regression model on either the Sentiment140 train (binary problem) or test sets (3 label problem). As the LogReg model outperformed the Naive Bayes model in all cases, we only present the LogReg results here.
+
+The binary problem (using ``train'') has much more data and our classifiers perform much better, with an 80\% accuracy score compared to 72\% on the 3-label problem (neutral, positive, negative). Regardless of accuracy scores, we believe the accuracy of the 3-label problem need be taken with a grain of salt due to the low data count. Note all accuracy scores were done on a 80/20 train/test split.
+
+\subsubsection{Attempts to incorporate sentiment lexicons}
+In an attempt to extract more useful features for sentiment classification, we have also begun to explore using sentiment lexicons. We have created two functions that, given data, will return sentiment scores for each element. The first function uses the SentiWordNet lexicon. Since each synset is defined by a word, a part of speech, and a word sense, it is first necessary to run the CMU Ark POS tagger on the data. Then, we lemmatize each word, as most entries in the SentiWordNet corpus are in the lemma form. For each of the nouns, verbs, adjectives and adverbs in the original data, we look up the sentiment score from SentiWordNet using the lemma, the POS given by the tagger, and the most popular word sense—note here that we don't do any word sense disambiguation but just assume the most popular word sense, which certainly does not provide the most accurate results. For each element of the data, we assign it a sentiment score of $\sum{p_i-n_i}$, where $p_i$ is the positive score and $n_i$ is the negative score for synset $i$ in the given element according to SentiWordNet.
+
+The second function uses NRC EmoLex to return a feature vector for each data element which includes counts of how many words in each element are associated with the eight emotions (anger, anticipation, disgust, fear, joy, sadness, surprise, trust) and two sentiments (negative, positive). The words are also lemmatized before looking them up in the lexicon, which improves sentiment classification results by about 10\%.
+
+As of the time of writing, we have not yet begun to utilize these features in our sentiment classification training.
+
+
+
+% Emoji Classifier Training
+% Explain the models we've been using, and report the various results of our classifiers with different features combos and preprocessing steps. Some charts and confusion matrices. Also probably a good place to discuss how hard this problem is and to analyze why the classifiers can't seem to do better than 30% accuracy.
+%\subsection{Emoji Classifier Training}
+%\subsubsection{Models}
+%\todo{TODO}
+%\subsubsection{Features Used in Classification}
+%\todo{TODO}
+%\subsubsection{Initial Results}
+%\todo{TODO}
+
+
+% Proposed Timeline
+% Summarize a conservative set of goals for what we want to accomplish before the final report and rough dates we want to have them done by.
+\section{Next Steps and Proposed Timeline}
+\textbf{Streamlined Pipeline:}
+The key next step for sentiment classifier training is to leverage the preprocessing steps which are being elaborately created for the emoji prediction problem. To do this, we will merge the send\_it.py and run\_me.py files so that the same preprocessing steps can be available to both (but only the former would save the classifiers to file and only the latter would load classifiers for features). We believe the initial results promising enough to continue bettering our Sentiment Classifiers through preprocessing, possibly more models (such as Neural Networks, or Random Forests), and sentiment lexicons. The success of the 3-label problem is contingent on us finding more data.
+
+\textbf{Neural Networks:}
+We wish to incorporate the use of Neural Nets into both Sentiment Classifier Training and Emoji Classifier Training. The past winners of SemEval17's sentiment detection in tweets used a RNN, and we hope to leverage the power of NN's for our own problem. This in mind, it may be hard to work NN's into our pipeline as it is. A lot of our current code is tailored for our current usage; in particular we make assumptions about (1) the model's methods (it is standardized in sklearn) and (2) the ability to pickle the model to save in between pipelines. Adding NN's may prove too difficult for the limited time remaining (potentially requiring their own pipeline rewritten almost from scratch). If this is the case we may simply experiment with other sklearn models along with more text features.
+
+\subsection{Timeline}
+
+\textbf{Mon, 11/27/17:} 
+\begin{itemize}
+\item Experiment with NN's
+\item Merge run\_me.py and send\_it.py
+\item Utilize sentiment lexicon features in sentiment classifier training and/or as features for emoji classification
+\end{itemize}
+
+\textbf{Mon, 12/4/17:} 
+\begin{itemize}
+\item Fully implement NN's within our pipeline OR train other sklearn models (Random Forest, etc)
+\item Experiment with preprocessing and sentiment training
+\item Add more text features other than unigrams/bigrams, run experiments
+\item Find better sentiment dataset, if possible
+\end{itemize}
+
+\textbf{Fri, 12/9/17:} 
+\begin{itemize}
+\item Finish all coding and experiments
+\end{itemize}
+
+\textbf{Tues, 12/12/17:}
+\begin{itemize}
+\item Put together poster based on experiments
+\end{itemize}
+
+\textbf{Thurs, 12/19/17:}
+\begin{itemize}
+\item Write report
+\end{itemize}
+
+\bibliography {sources.bib} 
+\bibliographystyle{acm}
+
+\end{document}
