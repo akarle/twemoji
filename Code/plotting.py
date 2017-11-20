@@ -4,7 +4,7 @@ import itertools
 import numpy as np
 
 
-def acc_bar_chart(title, desc, baseline, acc_scores, labels, output_file):
+def acc_bar_chart(title, desc, baseline, acc_scores, labels, output_file, nofigs):
     """ Graph the given accuracies against each other and baseline """
 
     # Graph the scores
@@ -20,12 +20,15 @@ def acc_bar_chart(title, desc, baseline, acc_scores, labels, output_file):
     descls = [x[2:-1] for x in descls]  # get rid of the unicode u' in string
     desc_str = "Preprocessing: " + ', '.join(descls)
     plt.subplots_adjust(bottom=.4)
-    plt.text(.05, -.14, desc_str, fontsize=9, wrap=True)
-    plt.savefig(output_file)
+    plt.text(.05, -.4, desc_str, fontsize=9, wrap=True)
+
+    if not nofigs:
+        plt.savefig(output_file)
+
     plt.clf()
 
 
-def plot_confusion_matrix(cnf_mat, clf_name, feats_str, output_file):
+def plot_confusion_matrix(cnf_mat, clf_name, feats_str, out_file, pipeline, nofigs):
     """ Creates and plots a confusion matrix for the predictions
 
         CITATION: THIS CODE HEAVILY ADAPTED FROM SCIKITLEARN:
@@ -43,8 +46,15 @@ def plot_confusion_matrix(cnf_mat, clf_name, feats_str, output_file):
 
     # Map the preds and gold to the emojis (for display)
     # TODO
-    classes = range(10)
-    n_clss = len(classes)
+    num_classes = cnf_mat.shape[0]
+
+    if pipeline == 'emoji':
+        title = "Emoji"
+        classes = np.arange(num_classes)
+
+    else:
+        title = "Sentiment"
+        classes = ["Negative", "Neutral", "Positive"]
 
     plt.imshow(cnf_mat, interpolation='nearest', cmap=plt.cm.Blues)
     plt.colorbar()
@@ -57,14 +67,19 @@ def plot_confusion_matrix(cnf_mat, clf_name, feats_str, output_file):
                  horizontalalignment="center",
                  color="white" if cnf_mat[i, j] > thresh else "black")
 
-    ticks = np.arange(n_clss)
+    ticks = np.arange(num_classes)
     plt.xticks(ticks, classes)
     plt.yticks(ticks, classes)
 
-    plt.suptitle('%s Emoji Confusion Matrix' % clf_name, fontweight='bold')
+
+    plt.suptitle('%s %s Confusion Matrix' % (clf_name, title),
+                 fontweight='bold')
+
     plt.title(feats_str)
     plt.ylabel('Gold Label')
     plt.xlabel('Predicted Label')
 
-    plt.savefig(output_file)
+    if not nofigs:
+        plt.savefig(out_file)
+
     plt.clf()

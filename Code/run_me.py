@@ -1,6 +1,6 @@
 # Imports
 from plotting import acc_bar_chart, plot_confusion_matrix
-from load_data import load_data
+from load_data import load_emoji, load_sent140
 from text_feat_extractor import TextFeatureExtractor
 from feature_combinator import FeatureCombinator
 import os
@@ -50,6 +50,14 @@ parser.add_argument('-d', '--data',
                     metavar='dataset',
                     dest='data')
 
+parser.add_argument('-p', '--pipeline',
+                    nargs=1,
+                    required=True,
+                    help='state whether you are training sentiment classifiers \
+                          or training emoji classifiers',
+                    metavar='pipeline',
+                    dest='pipeline')
+
 parser.add_argument('-n',
                     nargs=1,
                     type=int,
@@ -75,6 +83,11 @@ parser.add_argument('-l', '--loadout',
                     help='name of loadout JSON file in Loadouts directiory',
                     metavar='loadout',
                     dest='loadout')
+
+parser.add_argument('-nf', '--nofigures',
+                    action='store_true',
+                    help='a flag that when added prevents saving of figures',
+                    dest='nofigs')
 
 args = parser.parse_args()
 
@@ -115,23 +128,34 @@ if not os.path.isdir(data_path):
     raise Exception('Your specified data directory ' +
                     data_path + ' does not exist.')
 
-label_path = None
-text_path = None
-for f in os.listdir(data_path):
-    if fnmatch.fnmatch(f, '*.labels') and label_path is None:
-        label_path = os.path.join(data_path, f)
-    elif fnmatch.fnmatch(f, '*.text') and text_path is None:
-        text_path = os.path.join(data_path, f)
-if label_path is None:
-    raise Exception('Could not find a labels file.')
-if text_path is None:
-    raise Exception('Could not find a text file.')
+if args.pipeline[0] == 'emoji':
+    label_path = None
+    text_path = None
+    for f in os.listdir(data_path):
+        if fnmatch.fnmatch(f, '*.labels') and label_path is None:
+            label_path = os.path.join(data_path, f)
+        elif fnmatch.fnmatch(f, '*.text') and text_path is None:
+            text_path = os.path.join(data_path, f)
+    if label_path is None:
+        raise Exception('Could not find a labels file.')
+    if text_path is None:
+        raise Exception('Could not find a text file.')
 
-if args.num_instances:
-    data, labels, dcount = load_data(text_path,
-                                     label_path, args.num_instances[0])
+    if args.num_instances:
+        data, labels, dcount = load_emoji(text_path,
+                                          label_path, args.num_instances[0])
+    else:
+        data, labels, dcount = load_emoji(text_path, label_path)
+
+elif args.pipeline[0] == 'sent':
+    if args.num_instances:
+        data, labels, dcount = \
+            load_sent140(data_path, num_instances=args.num_instances[0])
+    else:
+        data, labels, dcount = load_sent140(data_path)
 else:
-    data, labels, dcount = load_data(text_path, label_path)
+    raise Exception('Invalid pipeline choice: choose either `emoji` or `sent`')
+
 
 # Randomize data order to prevent overfitting to subset of
 # data when running on fewer instances
@@ -197,9 +221,9 @@ if 'word-clustering' in pre:
                         escaped += c
                 if 'pos-tags' in pre:
                     line = re.sub(r"(?<=POS_._)(\W\B|[\W]*[\w]+\b)"
-                                  % escaped, clusterdict[x], line)
+                                  % escaped.lower(), clusterdict[x], line)
                 else:
-                    line = re.sub(r"\b%s\b" % escaped, clusterdict[x], line)
+                    line = re.sub(r"\b%s\b" % escaped.lower(), clusterdict[x], line)
         data_temp.append(line)
     data = data_temp
     clusterdict.clear()
@@ -258,6 +282,9 @@ if 'svm' in cl:
 # That is, classifer mapped to a list of tuples of (feat_combo, score)
 scores = {}
 
+# The best so far (to be stored if training sent clf)
+best = {'clf': None, 'perm': None, 'score': 0}
+
 # Train Classifiers on Extracted Features
 # Use FeatureCombinator to loop through all combos
 feat_perm = combinator.next_perm()
@@ -292,12 +319,20 @@ while feat_perm is not None:
         if c not in scores:
             scores[c] = []
 
-        cm = confusion_matrix(y_test, preds, labels=np.arange(10))
+        cm = confusion_matrix(y_test, preds,
+                              labels=np.arange(np.max(labels) + 1))
         scores[c].append((str(feat_perm[0]), score, cm))
 
         verboseprint("Average accuracy score: %f"
                      % (score,))
         verboseprint("*******")
+
+        # Add best clf to list of clfs for pickle
+        if score > best['score']:
+            print "Found new best!"
+            best['score'] = score
+            best['clf'] = c
+            best['perm'] = feat_perm
 
     # Go to next feature permutation
     feat_perm = combinator.next_perm()
@@ -332,11 +367,11 @@ for c in scores:
 for c in scores:
     output_file = '../Figures/' + c + \
                   '_out_' + time.strftime("%Y%m%d-%H%M%S") + '.png'
-    labels = []
+    graph_labels = []
     values = []
     cms = []
     for label, value, cm in scores[c]:
-        labels.append(label)
+        graph_labels.append(label)
         values.append(value)
         cms.append(cm)
 
@@ -345,16 +380,45 @@ for c in scores:
         desc,
         baseline_score,
         values,
-        labels,
-        output_file
+        graph_labels,
+        output_file,
+        args.nofigs
     )
 
     # Find best confusion matrix
     maxind = np.argmax(values)
     max_cm = cms[maxind]
-    max_label = labels[maxind]
+    max_label = graph_labels[maxind]
 
     conf_file = '../Figures/' + c + 'CONF_MTX_' +\
                 time.strftime("%Y%m%d-%H%M%S") + '.png'
 
-    plot_confusion_matrix(max_cm, c, max_label, conf_file)
+    plot_confusion_matrix(max_cm, c, max_label, conf_file,
+                          args.pipeline[0], args.nofigs)
+
+# ##############################################
+#            SAVE TOP CLFS (SENT ONLY)
+# ##############################################
+
+if args.pipeline[0] == 'sent':
+    verboseprint("Saving the top clf to pickle dump")
+    # Pull best from evaluation from curr_best
+    verboseprint("Best overall: %s with %s giving score %f" %
+                 (best['clf'], best['perm'][0], best['score']))
+
+    # Retrain the model with the data
+    clfs[best['clf']].fit(best['perm'][1], labels)
+
+    # Store the Classifiers in Pickle
+    # Pickle the following:
+    #     1. The trained classifier
+    #     2. The FE used (with its CV's and all) for re-extraction on pred data
+    #     3. The feat_perm list of feats for re-extraction on prediction data
+    clf_name = best['clf']
+    to_pikle = (clfs[clf_name],
+                clf_name,
+                extractor.get_pickleables(),
+                best['perm'][0])
+
+    with open('sent.pkl', 'w') as f:
+        pickle.dump(to_pikle, f)
