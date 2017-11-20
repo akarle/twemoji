@@ -20,7 +20,7 @@ def acc_bar_chart(title, desc, baseline, acc_scores, labels, output_file, nofigs
     descls = [x[2:-1] for x in descls]  # get rid of the unicode u' in string
     desc_str = "Preprocessing: " + ', '.join(descls)
     plt.subplots_adjust(bottom=.4)
-    plt.text(.05, -.14, desc_str, fontsize=9, wrap=True)
+    plt.text(.05, -.4, desc_str, fontsize=9, wrap=True)
 
     if not nofigs:
         plt.savefig(output_file)
