@@ -221,9 +221,9 @@ if 'word-clustering' in pre:
                         escaped += c
                 if 'pos-tags' in pre:
                     line = re.sub(r"(?<=POS_._)(\W\B|[\W]*[\w]+\b)"
-                                  % escaped, clusterdict[x], line)
+                                  % escaped.lower(), clusterdict[x], line)
                 else:
-                    line = re.sub(r"\b%s\b" % escaped, clusterdict[x], line)
+                    line = re.sub(r"\b%s\b" % escaped.lower(), clusterdict[x], line)
         data_temp.append(line)
     data = data_temp
     clusterdict.clear()
