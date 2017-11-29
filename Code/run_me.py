@@ -216,14 +216,15 @@ if 'word-clustering' in pre:
                 for c in y:
                     if c in ["-", "[", "]", "\\", "^", "$", "*", ".", "+",
                              ")", "(", "?", "|", "{", "}"]:
-                        escaped += ("\\"+c)
+                        escaped += ("\\" + c)
                     else:
                         escaped += c
                 if 'pos-tags' in pre:
                     line = re.sub(r"(?<=POS_._)(\W\B|[\W]*[\w]+\b)"
                                   % escaped.lower(), clusterdict[x], line)
                 else:
-                    line = re.sub(r"\b%s\b" % escaped.lower(), clusterdict[x], line)
+                    line = re.sub(r"\b%s\b" % escaped.lower(),
+                                  clusterdict[x], line)
         data_temp.append(line)
     data = data_temp
     clusterdict.clear()
@@ -246,6 +247,7 @@ if 'sent-class' in ftyps:
                  % (clf_name, perm))
 
     clf_feats = predict_sent(data_for_sent, clf, clf_name, pickleables, perm)
+    print clf_feats
     verboseprint("Sentiment prediction features complete")
     verboseprint("*******")
 

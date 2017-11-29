@@ -16,6 +16,7 @@ import unicodedata
 import sys
 import random
 import re
+import numpy as np
 
 
 def sentiwordnet_score(text):
@@ -67,13 +68,13 @@ def emolex_score(tlist):
     """
     tlist: a list of strings
     """
-    feats = []
     emolex = load_emolex()
     wnl = WordNetLemmatizer()
+    feats = None
     for t in tlist:
         tfeat = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
         for word in re.findall(r'(?u)\b\w+\b', t.lower()):
-            #print word
+            # print word
             word = wnl.lemmatize(word)
             tfeat[0] += emolex['anger'][word]
             tfeat[1] += emolex['anticipation'][word]
@@ -85,7 +86,10 @@ def emolex_score(tlist):
             tfeat[7] += emolex['sadness'][word]
             tfeat[8] += emolex['surprise'][word]
             tfeat[9] += emolex['trust'][word]
-        feats.append(tfeat)
+        if feats is not None:
+            feats = np.append(feats, [tfeat], axis=0)
+        else:
+            feats = np.array([tfeat])
     return feats
 
 
@@ -128,7 +132,7 @@ def test_classifier(numinstances):
                 break
             try:
                 sm = emolex_score([row[3]])[0]
-                #print sm
+                # print sm
                 pos_pre = sm[5]
                 neg_pre = sm[6]
                 if pos_pre == neg_pre:
