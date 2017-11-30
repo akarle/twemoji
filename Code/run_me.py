@@ -1,6 +1,6 @@
 # Imports
 from plotting import acc_bar_chart, plot_confusion_matrix
-from load_data import load_emoji, load_sent140
+from load_data import load_emoji, load_sentiment
 from text_feat_extractor import TextFeatureExtractor
 from feature_combinator import FeatureCombinator
 import os
@@ -150,9 +150,9 @@ if args.pipeline[0] == 'emoji':
 elif args.pipeline[0] == 'sent':
     if args.num_instances:
         data, labels, dcount = \
-            load_sent140(data_path, num_instances=args.num_instances[0])
+            load_sentiment(data_path, num_instances=args.num_instances[0])
     else:
-        data, labels, dcount = load_sent140(data_path)
+        data, labels, dcount = load_sentiment(data_path)
 else:
     raise Exception('Invalid pipeline choice: choose either `emoji` or `sent`')
 

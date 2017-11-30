@@ -8,16 +8,22 @@ import random
 # 2. Shuffle data (so as a partial read has more than 1 label)
 
 
-def manip_file(file_path, output_path):
+def manip_file(file_path, output_path,
+               tweetind, labelind, delimiter=','):
     labels = []
     text = []
+    label_map = {'neutral': 2, 'positive': 4, 'negative': 0}
 
     # Read in the raw data, save only parts we care about
     with open(file_path, 'r') as f:
-        reader = csv.reader(f, delimiter=',', quotechar='\"')
+        reader = csv.reader(f, delimiter=delimiter, quotechar='\"')
         for l in reader:
-            labels.append(l[0])
-            text.append(l[-1].rstrip())
+            label = l[labelind]
+            if type(label) is str:
+                label = label_map[label]
+
+            labels.append(label)
+            text.append(l[tweetind].rstrip())
 
     # Shuffle the lists
     combined = list(zip(text, labels))
@@ -41,5 +47,11 @@ if __name__ == "__main__":
     train_out = os.path.join(output_path, 'train.csv')
     test_out = os.path.join(output_path, 'test.csv')
 
-    manip_file(train_file, train_out)
-    manip_file(test_file, test_out)
+    manip_file(train_file, train_out, -1, 0)
+    manip_file(test_file, test_out, -1, 0)
+
+    # The semeval data
+    semeval_raw = os.path.join('..', 'Data', 'semeval', 'raw', 'train.csv')
+    semeval_out = os.path.join('..', 'Data', 'semeval', 'train.csv')
+
+    manip_file(semeval_raw, semeval_out, 2, 1, delimiter='\t')
