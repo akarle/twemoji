@@ -41,7 +41,7 @@ def load_emoji(data_file_path, label_file_path, num_instances=float('inf')):
     return (data, labels, count)
 
 
-def load_sent140(data_path, dataset='test', num_instances=float('inf')):
+def load_sentiment(data_path, dataset='train', num_instances=float('inf')):
     """ A func to load in the sentiment140 dataset
 
         data_path leads to a dir with a csv file of data
