@@ -19,49 +19,65 @@ import re
 import numpy as np
 
 
-def sentiwordnet_score(text):
+def sentiwordnet_score(data):
     """
     Takes a tweet and returns a sentiment value based on sentiwordnet scores
     text: string of text (tweet)
     returns: float, positive values are positive sentiment,
                     negative values are negative sentiment
     """
-    nfkd_form = unicodedata.normalize('NFKD', unicode(text, 'utf8'))
-    utext = u"".join([c for c in nfkd_form if not unicodedata.combining(c)])
-    ws = [il[:2] for ol in runtagger_parse([utext]) for il in ol]
-    # print ws
+    data = [u"".join([c for c in unicodedata.normalize(
+        'NFKD', unicode(d, 'utf8'))
+        if not unicodedata.combining(c)]) for d in data]
+    parse = [[il[:2] for il in ol] for ol in runtagger_parse(data)]
+    # print parse
     acceptable_pos = ['N', 'O', 'S', 'Z', 'V', 'A', 'R']
     wnl = WordNetLemmatizer()
-    ws = [wnl.lemmatize(w[0].lower()) +
-          '.' + ark_to_swn(w[1]) + '.01'
-          for w in ws if w[1] in acceptable_pos]
-    # print ws
-    score = 0.0
-    for w in ws:
-        try:
-            s = swn.senti_synset(w)
-            word_score = s.pos_score() - s.neg_score()
-        except Exception:
-            word_score = 0.0
-        # print w, word_score
-        score += word_score
-    return score
+    scores = None
+    for p in parse:
+        # print ws
+        ws = []
+        for w in p:
+            if w[1] in acceptable_pos:
+                word = w[0].lower()
+                try:
+                    word = wnl.lemmatize(word)
+                except UnicodeDecodeError:
+                    pass
+                word += '.' + ark_to_swn(w[1]) + '.01'
+                ws += [word]
+        # print ws
+        score = 0.0
+        for w in ws:
+            try:
+                s = swn.senti_synset(w)
+                word_score = s.pos_score() - s.neg_score()
+            except Exception:
+                word_score = 0.0
+            # print w, word_score
+            score += word_score
+        # print score
+        if scores is None:
+            scores = np.array([[score]])
+        else:
+            scores = np.append(scores, [[score]], axis=0)
+    return scores
 
 
-def sentiwordnet_classify(text):
+def sentiwordnet_classify(data):
     """
     Returns a pos/neg/neutral sentiment val for text
         1 if pos
         0 if neutral
         -1 if neg
     """
-    score = sentiwordnet_score(text)
-    if score > 0:
-        return 1
-    elif score < 0:
-        return -1
-    else:
-        return 0
+    scores = sentiwordnet_score(data)
+    for score in np.nditer(scores, op_flags=['readwrite']):
+        if score > 0:
+            score[...] = 1
+        elif score < 0:
+            score[...] = -1
+    return scores
 
 
 def emolex_score(tlist):
@@ -75,7 +91,10 @@ def emolex_score(tlist):
         tfeat = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
         for word in re.findall(r'(?u)\b\w+\b', t.lower()):
             # print word
-            word = wnl.lemmatize(word)
+            try:
+                word = wnl.lemmatize(word)
+            except UnicodeDecodeError:
+                pass
             tfeat[0] += emolex['anger'][word]
             tfeat[1] += emolex['anticipation'][word]
             tfeat[2] += emolex['disgust'][word]

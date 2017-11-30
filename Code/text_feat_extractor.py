@@ -1,6 +1,8 @@
 # Imports
 from sklearn.feature_extraction.text import CountVectorizer
-# import CMUTweetTagger
+from sentiment_lexicon_scoring import emolex_score
+from sentiment_lexicon_scoring import sentiwordnet_score
+from sentiment_lexicon_scoring import sentiwordnet_classify
 
 
 class TextFeatureExtractor():
@@ -8,7 +10,10 @@ class TextFeatureExtractor():
     def __init__(self):
         # A mapping of keywords to functions (for use in extract features)
         self.features_dict = {'unigram': self.unigram_features,
-                              'bigram': self.bigram_features}
+                              'bigram': self.bigram_features,
+                              'emolex': self.emolex_features,
+                              'swn_reg': self.swn_reg_features,
+                              'swn_class': self.swn_class_features}
 
         # A list of the CV's trained (for pickling)
         self.pickleables = {}
@@ -53,6 +58,15 @@ class TextFeatureExtractor():
             counts = pickles['bigram'].transform(data)
 
         return counts
+
+    def emolex_features(self, data, cvargs, pickles):
+        return emolex_score(data)
+
+    def swn_reg_features(self, data, cvargs, pickles):
+        return sentiwordnet_score(data)
+
+    def swn_class_features(self, data, cvargs, pickles):
+        return sentiwordnet_classify(data)
 
     def extract_features(self, data, features_to_extract,
                          cvargs=None, pickles=None):
