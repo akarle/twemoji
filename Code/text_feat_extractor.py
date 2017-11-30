@@ -63,10 +63,12 @@ class TextFeatureExtractor():
         return emolex_score(data)
 
     def swn_reg_features(self, data, cvargs, pickles):
-        return sentiwordnet_score(data)
+        feats = sentiwordnet_score(data)
+        return feats.reshape(-1, 1)
 
     def swn_class_features(self, data, cvargs, pickles):
-        return sentiwordnet_classify(data)
+        feats = sentiwordnet_classify(data)
+        return feats.reshape(-1, 1)
 
     def extract_features(self, data, features_to_extract,
                          cvargs=None, pickles=None):

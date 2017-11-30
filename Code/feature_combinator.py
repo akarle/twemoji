@@ -1,5 +1,6 @@
 from itertools import combinations
-from scipy.sparse import hstack
+import numpy as np
+from scipy.sparse import hstack, issparse
 
 
 class FeatureCombinator():
@@ -46,6 +47,14 @@ class FeatureCombinator():
             perm = self.feat_perms[self.curr_perm]
             self.curr_perm += 1
 
+            seen_sparse = False  # use sparse hstack once seen a sparse mat
+
+            def condit_hstack(x, y, seen_sparse):
+                if seen_sparse:
+                    return hstack((x, y))
+                else:
+                    return np.hstack((x, y))
+
             # Go through perm and combine the feats
             # perm is a tuple of feats to combine
             if perm[0] in self.feats.keys():
@@ -53,11 +62,19 @@ class FeatureCombinator():
             else:
                 features = self.clf_preds[perm[0]]
 
+            if issparse(features):
+                seen_sparse = True
+
             for feat in perm[1:]:
                 if feat in self.feats.keys():
-                    features = hstack((features, self.feats[feat]))
+                    feat_to_add = self.feats[feat]
                 else:
-                    features = hstack((features, self.clf_preds[feat]))
+                    feat_to_add = self.clf_preds[feat]
+
+                if issparse(feat_to_add):
+                    seen_sparse = True
+
+                features = condit_hstack(features, feat_to_add, seen_sparse)
 
             return (perm, features)
 
