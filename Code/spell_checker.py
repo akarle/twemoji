@@ -20,6 +20,6 @@ def correct_spelling(data):
         corrections.append(corrected)
         count += 1
         if count > 1 and count % 100 == 0:
-            print "Spelling checking " + str(float(count) /
-                                             len(data) * 100) + "% done..."
+            print "Spelling checking " + str('%.2f' % (float(count) /
+                                             len(data) * 100)) + "% done..."
     return corrections
