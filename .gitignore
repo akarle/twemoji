@@ -10,3 +10,6 @@ pip-selfcheck.json
 
 # MacOS files
 .DS_Store
+
+# ctags file
+tags
