@@ -7,8 +7,9 @@ import os
 import fnmatch
 from sklearn.naive_bayes import MultinomialNB
 from sklearn.linear_model import LogisticRegression
+from sklearn.ensemble import RandomForestClassifier
 from sklearn.svm import LinearSVC
-from sklearn.model_selection import train_test_split
+from sklearn.model_selection import train_test_split, GridSearchCV
 from sklearn.metrics import accuracy_score, confusion_matrix
 from sklearn.metrics import precision_recall_fscore_support
 import numpy as np
@@ -97,7 +98,7 @@ if args.verbose >= 1:
             print arg,
         print
 else:
-    verboseprint = lambda *a: None
+    verboseprint = lambda *a: None  # noqa
 
 cverbosity = args.verbose >= 2
 
@@ -243,11 +244,12 @@ if 'sent-class' in ftyps:
     with open('sent.pkl', 'r') as f:
         clf, clf_name, pickleables, perm = pickle.load(f)
 
-    verboseprint("The best sent_clf stored is: %s with feats %s"
-                 % (clf_name, perm))
+    verboseprint("The best sent_clf stored is: %s (params: %s) with feats %s"
+                 % (clf_name, clf.get_params(), perm))
 
     clf_feats = predict_sent(data_for_sent, clf, clf_name, pickleables, perm)
-    print clf_feats
+    preds = clf_feats[clf_name]
+    print "num non neutral preds: ", (len(preds[preds != 1]), len(preds))
     verboseprint("Sentiment prediction features complete")
     verboseprint("*******")
 
@@ -268,13 +270,18 @@ clfs = {}
 tick_names = []  # seperate for graph tick labels
 if 'nb' in cl:
     tick_names.append('Multi. NB')
-    clfs['Multinomial Naive Bayes'] = MultinomialNB()
+    clfs['Multinomial Naive Bayes'] = [MultinomialNB(), {}]
 if 'lr' in cl:
     tick_names.append('LogReg')
-    clfs['Logistic Regression'] = LogisticRegression(verbose=cverbosity)
+    clfs['Logistic Regression'] = [LogisticRegression(verbose=cverbosity), {}]
 if 'svm' in cl:
     tick_names.append('Lin. SVM')
-    clfs['Linear SVM'] = LinearSVC(verbose=cverbosity)
+    clfs['Linear SVM'] = [LinearSVC(verbose=cverbosity), {}]
+if 'rf' in cl:
+    tick_names.append('RandForest')
+    hyp = {'n_estimators': [10, 30, 50],
+           'max_depth': [None, 1, 3, 10]}
+    clfs['RF'] = [RandomForestClassifier(n_jobs=-1, verbose=cverbosity), hyp]
 
 # ##############################################
 #           TRAIN AND EVALUATE CLFS
@@ -302,10 +309,21 @@ while feat_perm is not None:
 
     for c in clfs:
         # Train (and Tune Hyperparams)
-        clfs[c].fit(X_train, y_train)
+        hypdict = clfs[c][1]
+        if not hypdict:  # empty dict
+            clfs[c][0].fit(X_train, y_train)
+            bestclf = clfs[c][0]
+            bestparams = {}
+
+        else:
+            # Cross val over hyperparams!
+            gridcv = GridSearchCV(clfs[c][0], hypdict, verbose=cverbosity)
+            gridcv.fit(X_train, y_train)
+            bestclf = gridcv
+            bestparams = gridcv.best_params_
 
         # Score, save score
-        preds = clfs[c].predict(X_test)
+        preds = bestclf.predict(X_test)
         score = accuracy_score(y_test, preds)
 
         verboseprint("Classifer: ", c, " with features: ", feat_perm[0])
@@ -335,7 +353,10 @@ while feat_perm is not None:
             best['score'] = score
             best['clf'] = c
             best['perm'] = feat_perm
+            best['params'] = bestparams
 
+        verboseprint("%s: (params: %s)" % (c, bestparams))
+        verboseprint("*******")
     # Go to next feature permutation
     feat_perm = combinator.next_perm()
 
@@ -405,11 +426,15 @@ for c in scores:
 if args.pipeline[0] == 'sent':
     verboseprint("Saving the top clf to pickle dump")
     # Pull best from evaluation from curr_best
-    verboseprint("Best overall: %s with %s giving score %f" %
-                 (best['clf'], best['perm'][0], best['score']))
+    verboseprint("Best overall: %s (params: %s) with %s giving score %f" %
+                 (best['clf'], best['params'], best['perm'][0], best['score']))
 
     # Retrain the model with the data
-    clfs[best['clf']].fit(best['perm'][1], labels)
+    if best['params']:
+        print best['params']
+        clfs[best['clf']][0].set_params(**best['params'])
+
+    clfs[best['clf']][0].fit(best['perm'][1], labels)
 
     # Store the Classifiers in Pickle
     # Pickle the following:
@@ -417,7 +442,7 @@ if args.pipeline[0] == 'sent':
     #     2. The FE used (with its CV's and all) for re-extraction on pred data
     #     3. The feat_perm list of feats for re-extraction on prediction data
     clf_name = best['clf']
-    to_pikle = (clfs[clf_name],
+    to_pikle = (clfs[clf_name][0],
                 clf_name,
                 extractor.get_pickleables(),
                 best['perm'][0])
