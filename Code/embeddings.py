@@ -50,10 +50,10 @@ X_train, X_test, y_train, y_test = train_test_split(
 print "train/test split done"
 
 # save to file for futher use
-np.save('../Data/nolocDoc2Vec/%s.npy', X_train)
-np.save('../Data/nolocDoc2Vec/%s.npy', X_test)
-np.save('../Data/nolocDoc2Vec/%s.npy', y_train)
-np.save('../Data/nolocDoc2Vec/%s.npy', y_test)
+np.save('../Data/nolocDoc2Vec/%s.npy' % 'xtrain', X_train)
+np.save('../Data/nolocDoc2Vec/%s.npy' % 'xtest', X_test)
+np.save('../Data/nolocDoc2Vec/%s.npy' % 'ytrain',  y_train)
+np.save('../Data/nolocDoc2Vec/%s.npy' % 'ytest', y_test)
 
 # basic sklearn classifiaction!
 lr = LogisticRegression()
