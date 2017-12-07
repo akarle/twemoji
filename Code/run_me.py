@@ -213,6 +213,7 @@ if 'word-clustering' or 'word-clustering-append' in pre:
             temp = line.split(' ')
             for x in temp:
                 if 'pos-tags' in pre:
+                    x = x.split('_')[2]
                 if x in clusterdict:
                     y = list(x)
                     escaped = ""
@@ -230,6 +231,7 @@ if 'word-clustering' or 'word-clustering-append' in pre:
                                       clusterdict[x], line)
             data_temp.append(line)
         data = data_temp
+
     if 'word-clustering-append' in pre:
         verboseprint("Word appending using clusters....")
         data_temp = []
@@ -237,9 +239,12 @@ if 'word-clustering' or 'word-clustering-append' in pre:
             temp = line.split(' ')
             for x in temp:
                 if 'pos-tags' in pre:
+                    x = x.split('_')[2]
                 if x in clusterdict:
+                    line = line+" "+clusterdict[x]
             data_temp.append(line)
         data = data_temp
+
     clusterdict.clear()
     clusters.close()
 
