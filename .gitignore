@@ -13,3 +13,7 @@ pip-selfcheck.json
 
 # ctags file
 tags
+
+# dockerjunk
+requirements.txt
+Dockerfile

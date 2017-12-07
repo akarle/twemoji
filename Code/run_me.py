@@ -197,8 +197,7 @@ if 'pos-tags' in pre:
     verboseprint("*******")
 
 # WORD REPLACEMENT USING CLUSTERS
-if 'word-clustering' in pre:
-    verboseprint("Word replacement using clusters....")
+if 'word-clustering' or 'word-clustering-append' in pre:
     clusters_path = os.path.join('..', 'Data', '50mpaths2.txt')
     clusters = open(clusters_path, "r")
     clusterdict = {}
@@ -207,27 +206,40 @@ if 'word-clustering' in pre:
         temp = re.split(r'\t+', line)
         clusterdict[temp[1]] = temp[0]
 
-    data_temp = []
-    for line in data:
-        temp = line.split(' ')
-        for x in temp:
-            if x in clusterdict:
-                y = list(x)
-                escaped = ""
-                for c in y:
-                    if c in ["-", "[", "]", "\\", "^", "$", "*", ".", "+",
-                             ")", "(", "?", "|", "{", "}"]:
-                        escaped += ("\\" + c)
-                    else:
-                        escaped += c
+    if 'word-clustering' in pre:
+        verboseprint("Word replacement using clusters....")
+        data_temp = []
+        for line in data:
+            temp = line.split(' ')
+            for x in temp:
                 if 'pos-tags' in pre:
-                    line = re.sub(r"(?<=POS_._)(\W\B|[\W]*[\w]+\b)"
-                                  % escaped.lower(), clusterdict[x], line)
-                else:
-                    line = re.sub(r"\b%s\b" % escaped.lower(),
-                                  clusterdict[x], line)
-        data_temp.append(line)
-    data = data_temp
+                if x in clusterdict:
+                    y = list(x)
+                    escaped = ""
+                    for c in y:
+                        if c in ["-", "[", "]", "\\", "^", "$", "*", ".", "+",
+                                 ")", "(", "?", "|", "{", "}"]:
+                            escaped += ("\\" + c)
+                        else:
+                            escaped += c
+                    if 'pos-tags' in pre:
+                        line = re.sub(r"(?<=POS_._)(\W\B|[\W]*[\w]+\b)"
+                                      % escaped.lower(), clusterdict[x], line)
+                    else:
+                        line = re.sub(r"\b%s\b" % escaped.lower(),
+                                      clusterdict[x], line)
+            data_temp.append(line)
+        data = data_temp
+    if 'word-clustering-append' in pre:
+        verboseprint("Word appending using clusters....")
+        data_temp = []
+        for line in data:
+            temp = line.split(' ')
+            for x in temp:
+                if 'pos-tags' in pre:
+                if x in clusterdict:
+            data_temp.append(line)
+        data = data_temp
     clusterdict.clear()
     clusters.close()
 

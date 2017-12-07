@@ -50,6 +50,8 @@ def parse_loadout(loadout_name):
             manpre.append('spell-correction')
         if 'word-clustering' in loadout['preprocessing']:
             manpre.append('word-clustering')
+        if 'word-clustering-append' in loadout['preprocessing']:
+            manpre.append('word-clustering-append')
         if 'pos-tags' in loadout['preprocessing']:
             manpre.append('pos-tags')
 
