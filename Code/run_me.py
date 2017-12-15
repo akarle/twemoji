@@ -157,12 +157,42 @@ elif args.pipeline[0] == 'sent':
 else:
     raise Exception('Invalid pipeline choice: choose either `emoji` or `sent`')
 
-
 # Randomize data order to prevent overfitting to subset of
 # data when running on fewer instances
 combined = list(zip(data, labels))
 random.shuffle(combined)
 data[:], labels[:] = zip(*combined)
+
+# Label remap
+if 'remap' in pre and args.pipeline[0] == 'emoji':
+    verboseprint("Remapping labels....")
+    templabel = []
+    for label in labels:
+        if label == 0 or label == 3 or label == 8 or label == 13:
+            templabel.append(0)
+        if label == 1 or label == 9:
+            templabel.append(11)
+        elif label == 2:
+            templabel.append(1)
+        elif label == 4:
+            templabel.append(2)
+        elif label == 5 or label == 6 or label == 16:
+            templabel.append(3)
+        elif label == 7:
+            templabel.append(4)
+        elif label == 10 or label == 18:
+            templabel.append(5)
+        elif label == 11:
+            templabel.append(6)
+        elif label == 12:
+            templabel.append(7)
+        elif label == 14 or label == 19:
+            templabel.append(8)
+        elif label == 15:
+            templabel.append(9)
+        elif label == 17:
+            templabel.append(10)  
+    labels = templabel
 
 verboseprint("Loaded ", dcount, " tweets...")
 verboseprint('First 10 tweets and labels: ')

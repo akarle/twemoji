@@ -46,6 +46,8 @@ def parse_loadout(loadout_name):
 
         # Manual preprocessing flags
         manpre = []
+        if 'remap' in loadout['preprocessing']:
+            manpre.append('remap')
         if 'spell-correction' in loadout['preprocessing']:
             manpre.append('spell-correction')
         if 'word-clustering' in loadout['preprocessing']:
