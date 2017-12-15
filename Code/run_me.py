@@ -168,29 +168,29 @@ if 'remap' in pre and args.pipeline[0] == 'emoji':
     verboseprint("Remapping labels....")
     templabel = []
     for label in labels:
-        if label == 0 or label == 3 or label == 8 or label == 13:
+        if label in [0,3,8,13]:
             templabel.append(0)
-        if label == 1 or label == 9:
+        if label in [1,9]:
             templabel.append(11)
-        elif label == 2:
+        elif label in [2]:
             templabel.append(1)
-        elif label == 4:
+        elif label in [4]:
             templabel.append(2)
-        elif label == 5 or label == 6 or label == 16:
+        elif label in [5,6,16]:
             templabel.append(3)
-        elif label == 7:
+        elif label in [7]:
             templabel.append(4)
-        elif label == 10 or label == 18:
+        elif label in [10,18]:
             templabel.append(5)
-        elif label == 11:
+        elif label in [11]:
             templabel.append(6)
-        elif label == 12:
+        elif label in [12]:
             templabel.append(7)
-        elif label == 14 or label == 19:
+        elif label in [14,19]:
             templabel.append(8)
-        elif label == 15:
+        elif label in [15]:
             templabel.append(9)
-        elif label == 17:
+        elif label in [17]:
             templabel.append(10)  
     labels = templabel
 
