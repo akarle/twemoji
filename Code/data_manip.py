@@ -19,7 +19,7 @@ def manip_file(file_path, output_path,
         reader = csv.reader(f, delimiter=delimiter, quotechar='\"')
         for l in reader:
             label = l[labelind]
-            if type(label) is str:
+            if type(label) is str and not label.isdigit():
                 label = label_map[label]
 
             labels.append(label)
