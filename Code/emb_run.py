@@ -12,9 +12,8 @@ y_train = np.load('../Data/nolocDoc2Vec/%s.npy' % 'ytrain')
 y_test = np.load('../Data/nolocDoc2Vec/%s.npy' % 'ytest')
 
 # instantiate classifiers...
-hyp = {'n_estimators': [1], 'max_depth': [1, 3]}
-# hyp = {'n_estimators': [10, 300, 500],
-       # 'max_depth': [None, 1, 3, 10, 50, 100]}
+hyp = {'n_estimators': [10, 300, 500],
+       'max_depth': [None, 1, 3, 10, 50, 100]}
 
 rf = RandomForestClassifier(n_jobs=-1, verbose=2)
 

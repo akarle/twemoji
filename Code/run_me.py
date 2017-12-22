@@ -168,30 +168,30 @@ if 'remap' in pre and args.pipeline[0] == 'emoji':
     verboseprint("Remapping labels....")
     templabel = []
     for label in labels:
-        if label in [0,3,8,13]:
+        if label in [0, 3, 8, 13]:
             templabel.append(0)
-        if label in [1,9]:
+        if label in [1, 9]:
             templabel.append(11)
         elif label in [2]:
             templabel.append(1)
         elif label in [4]:
             templabel.append(2)
-        elif label in [5,6,16]:
+        elif label in [5, 6, 16]:
             templabel.append(3)
         elif label in [7]:
             templabel.append(4)
-        elif label in [10,18]:
+        elif label in [10, 18]:
             templabel.append(5)
         elif label in [11]:
             templabel.append(6)
         elif label in [12]:
             templabel.append(7)
-        elif label in [14,19]:
+        elif label in [14, 19]:
             templabel.append(8)
         elif label in [15]:
             templabel.append(9)
         elif label in [17]:
-            templabel.append(10)  
+            templabel.append(10)
     labels = templabel
 
 verboseprint("Loaded ", dcount, " tweets...")
@@ -271,7 +271,7 @@ if 'word-clustering' or 'word-clustering-append' in pre:
                 if 'pos-tags' in pre:
                     x = x.split('_')[2]
                 if x in clusterdict:
-                    line = line+" "+clusterdict[x]
+                    line = line + " " + clusterdict[x]
             data_temp.append(line)
         data = data_temp
 
@@ -295,6 +295,23 @@ if 'sent-class' in ftyps:
                  % (clf_name, clf.get_params(), perm))
 
     clf_feats = predict_sent(data_for_sent, clf, clf_name, pickleables, perm)
+    preds = clf_feats[clf_name]
+    print "num non neutral preds: ", (len(preds[preds != 1]), len(preds))
+    verboseprint("Sentiment prediction features complete")
+    verboseprint("*******")
+
+if 'sent-prob' in ftyps:
+    ftyps.remove('sent-prob')
+    verboseprint("*******")
+    verboseprint("Loading pickled sentiment classifiers...")
+    with open('sent.pkl', 'r') as f:
+        clf, clf_name, pickleables, perm = pickle.load(f)
+
+    verboseprint("The best sent_clf stored is: %s (params: %s) with feats %s"
+                 % (clf_name, clf.get_params(), perm))
+
+    clf_feats = predict_sent(data_for_sent, clf, clf_name, pickleables, perm,
+                             prob=True)
     preds = clf_feats[clf_name]
     print "num non neutral preds: ", (len(preds[preds != 1]), len(preds))
     verboseprint("Sentiment prediction features complete")
@@ -354,6 +371,7 @@ while feat_perm is not None:
     X_train, X_test, y_train, y_test = train_test_split(
         feat_perm[1], labels, test_size=0.30, random_state=0)
 
+    print y_train[:10]
     for c in clfs:
         # Train (and Tune Hyperparams)
         hypdict = clfs[c][1]

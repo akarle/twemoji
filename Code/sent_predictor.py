@@ -2,7 +2,7 @@ from text_feat_extractor import TextFeatureExtractor
 from scipy.sparse import hstack
 
 
-def predict_sent(data, clf, clf_name, pickleables, perm):
+def predict_sent(data, clf, clf_name, pickleables, perm, prob=False):
     """ Given pickle stuff, return sent prediction on data """
 
     # Create new FE
@@ -20,7 +20,11 @@ def predict_sent(data, clf, clf_name, pickleables, perm):
         full_feats = hstack((full_feats, feats[k]))
 
     # Use pretrained clf to predict on feats
-    preds = clf.predict(full_feats).reshape(-1, 1)
+    if not prob:
+        preds = clf.predict(full_feats).reshape(-1, 1)
+    else:
+        preds = clf.predict_proba(full_feats)[:, -1].reshape(-1, 1)
+        print "PROBS: ", preds[:10]
 
     # TODO: maybe adapt to be a dict of more than one clf?
     # FC is adaptable to this, would just need to pickle more than one!
