@@ -11,6 +11,7 @@ class TextFeatureExtractor():
         # A mapping of keywords to functions (for use in extract features)
         self.features_dict = {'unigram': self.unigram_features,
                               'bigram': self.bigram_features,
+                              'trigram': self.trigram_features,
                               'emolex': self.emolex_features,
                               'swn_reg': self.swn_reg_features,
                               'swn_class': self.swn_class_features}
@@ -56,6 +57,27 @@ class TextFeatureExtractor():
 
         else:
             counts = pickles['bigram'].transform(data)
+
+        return counts
+        
+    def trigram_features(self, data, cvargs, pickles):
+        if pickles is None:
+            if cvargs is not None:
+                count_vect = CountVectorizer(
+                    ngram_range=(3, 3),
+                    lowercase=cvargs['lowercase'],
+                    stop_words=cvargs['stop_words'],
+                    strip_accents=cvargs['strip_accents'],
+                    token_pattern=cvargs['token_pattern']
+                )
+            else:
+                count_vect = CountVectorizer(ngram_range=(3, 3))
+
+            counts = count_vect.fit_transform(data)
+            self.pickleables['trigram'] = count_vect  # store after fitting
+
+        else:
+            counts = pickles['trigram'].transform(data)
 
         return counts
 
