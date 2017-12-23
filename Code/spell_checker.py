@@ -1,3 +1,5 @@
+""" This file is for spell correction preprocessing """
+
 from enchant.checker import SpellChecker
 
 

@@ -1,3 +1,8 @@
+"""
+    This file is concerned with generating sentiment features,
+    either classifications or probabilities, given a trained
+    sentiment classifier and data to predict on.
+"""
 from text_feat_extractor import TextFeatureExtractor
 from scipy.sparse import hstack
 

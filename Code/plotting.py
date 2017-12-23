@@ -1,3 +1,8 @@
+"""
+    This is a file for all of our plotting needs, to keep code clean
+    in other parts of the pipeline
+"""
+
 # Imports
 from matplotlib import pyplot as plt
 import itertools

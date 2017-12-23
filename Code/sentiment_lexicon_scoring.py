@@ -5,6 +5,8 @@ This requires that you've:
     3. import nltk
     4. nltk.download('wordnet')
     5. nltk.download('sentiwordnet')
+
+This file is home to all the sentiwordnet features
 """
 from nltk.corpus import sentiwordnet as swn
 from nltk.stem import WordNetLemmatizer

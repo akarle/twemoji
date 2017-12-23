@@ -1,3 +1,8 @@
+""" This is the 'alternate pipeline' used to train and test
+    classifiers that are run on document embeddings (created by
+    embeddings.py
+"""
+
 import numpy as np
 import time
 from sklearn.ensemble import RandomForestClassifier

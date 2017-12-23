@@ -1,3 +1,9 @@
+"""
+    This script is used to create the document embeddings used
+    to train and evaluate models of the alternate pipeline
+    (emb_run.py). It uses Doc2Vec to create an embedding
+    for each tweet in the emoji dataset, and saves to file
+"""
 import numpy as np
 from gensim.models import Doc2Vec
 from gensim.models.doc2vec import TaggedDocument

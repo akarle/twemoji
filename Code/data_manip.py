@@ -1,4 +1,7 @@
-""" A file to manipulate raw data as needed """
+""" A file to manipulate raw data as needed, more specifically,
+    it has become a script used to manipulate the semeval18 and
+    sent140 datasets to a state required by load_data.py
+"""
 import os
 import csv
 import random

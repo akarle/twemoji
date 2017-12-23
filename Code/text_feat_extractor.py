@@ -1,3 +1,8 @@
+"""
+    One of the main parts of the main pipeline, the feature extractor
+    class is used to extract a series of features for the data based
+    on a specified loadout.
+"""
 # Imports
 from sklearn.feature_extraction.text import CountVectorizer
 from sentiment_lexicon_scoring import emolex_score

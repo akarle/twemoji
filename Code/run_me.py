@@ -1,3 +1,9 @@
+"""
+    This is the main pipeline, as described in the paper.
+    The arguments required are mostly documented via the
+    usage with the commandline.
+"""
+
 # Imports
 from plotting import acc_bar_chart, plot_confusion_matrix
 from load_data import load_emoji, load_sentiment
