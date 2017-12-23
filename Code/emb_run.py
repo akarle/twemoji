@@ -9,6 +9,7 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import GridSearchCV
 from sklearn.metrics import confusion_matrix
 from plotting import plot_confusion_matrix
+from sklearn.neural_network import MLPClassifier
 
 # load data
 X_train = np.load('../Data/nolocDoc2Vec/%s.npy' % 'xtrain')
@@ -19,9 +20,12 @@ y_test = np.load('../Data/nolocDoc2Vec/%s.npy' % 'ytest')
 # instantiate classifiers...
 hyp = {'n_estimators': [10, 300, 500],
        'max_depth': [None, 1, 3, 10, 50, 100]}
+#hyp = {'n_estimators': [1], 'max_depth': [1, 3]}
+#hyp = {'max_iter': [50, 100, 200], 'hidden_layer_sizes': [(50,), (100,)]}
 
 rf = RandomForestClassifier(n_jobs=-1, verbose=2)
 
+mlp = MLPClassifier(verbose=True)
 
 gridcv = GridSearchCV(rf, hyp, verbose=2)
 
